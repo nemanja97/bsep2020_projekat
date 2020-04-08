@@ -5,7 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tim6.bsep.pki.exceptions.CertificateNotFoundException;
+import tim6.bsep.pki.exceptions.IssuerNotCAException;
 import tim6.bsep.pki.mapper.CertificateInfoMapper;
+import tim6.bsep.pki.model.RevocationReason;
 import tim6.bsep.pki.service.implementation.CertificateServiceImpl;
 import tim6.bsep.pki.web.v1.dto.CreateCertificateDTO;
 
@@ -37,14 +40,14 @@ public class CertificateController {
     }
 
     @RequestMapping(value = "/ca", method = RequestMethod.POST, consumes = "application/json")
-    public ResponseEntity createCACertificate(@RequestBody CreateCertificateDTO CACertificateDTO) {
+    public ResponseEntity createCACertificate(@RequestBody CreateCertificateDTO CACertificateDTO) throws CertificateNotFoundException, IssuerNotCAException {
         X500Name subjectData = CertificateInfoMapper.nameFromDTO(CACertificateDTO);
         certificateServiceImpl.createCertificate(CACertificateDTO.getIssuerAlias(), subjectData,true);
         return new ResponseEntity(HttpStatus.OK);
     }
 
     @RequestMapping(value = "/leaf", method = RequestMethod.POST, consumes = "application/json")
-    public ResponseEntity createLeafCertificate(@RequestBody CreateCertificateDTO CertificateDTO) {
+    public ResponseEntity createLeafCertificate(@RequestBody CreateCertificateDTO CertificateDTO) throws CertificateNotFoundException, IssuerNotCAException {
         X500Name subjectData = CertificateInfoMapper.nameFromDTO(CertificateDTO);
         certificateServiceImpl.createCertificate(CertificateDTO.getIssuerAlias(), subjectData,false);
         return new ResponseEntity(HttpStatus.OK);
@@ -55,9 +58,13 @@ public class CertificateController {
         return null;
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, consumes = "application/json")
-    public ResponseEntity revokeCertificate(@PathVariable String id) {
-        return null;
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity revokeCertificate(@PathVariable Long id, @RequestParam RevocationReason reason) {
+        boolean success = certificateServiceImpl.revokeCertificate(id, reason);
+        if (success)
+            return new ResponseEntity(HttpStatus.OK);
+        else
+            return new ResponseEntity(HttpStatus.NOT_MODIFIED);
     }
 
 }
