@@ -1,33 +1,40 @@
 package tim6.bsep.pki.service;
 
 import org.springframework.beans.factory.annotation.Value;
-import tim6.bsep.pki.keystore.KeyStoreReader;
-import tim6.bsep.pki.keystore.KeyStoreWriter;
 import tim6.bsep.pki.model.IssuerData;
 
+import java.security.PrivateKey;
 import java.security.cert.Certificate;
 
-public class KeyStoreService {
+public interface KeyStoreService {
 
-    @Value("${PKI.keystore_path}")
-    public String keystore_path;
+    String keystore_path = null;
+    
+    String keystore_name = null;
+    
+    String keystore_password = null;
 
-    @Value("${PKI.keystore_password}")
-    public String keystore_password;
+    void createKeyStore();
 
-    private KeyStoreReader keyStoreReader;
-    private KeyStoreWriter keyStoreWriter;
+    void createKeyStore(String path, String filename, char[] password);
 
-    public void createKeyStore(String path, String filename, char[] password) {
-        keyStoreWriter.createKeyStore(path, filename, password);
-    }
+    void loadKeyStore();
 
-    public Certificate readCertificate(String keyStoreFile, String password, String alias) {
-        return keyStoreReader.readCertificate(keyStoreFile, password, alias);
-    }
+    void saveKeyStore();
 
-    public IssuerData readIssuerFromStore(String keyStoreFile, String alias, char[] password, char[] keyPass) {
-        return keyStoreReader.readIssuerFromStore(keyStoreFile, alias, password, keyPass);
-    }
+    void saveCertificate(String alias, Certificate certificate);
 
+    void savePrivateKey(String alias, Certificate[] certificate, PrivateKey privateKey);
+
+    PrivateKey readPrivateKey(String alias);
+
+    Certificate readCertificate(String keyStoreFile, String password, String alias);
+
+    Certificate[] readCertificateChain(String alias);
+
+    Certificate readCertificate(String alias);
+
+    IssuerData readIssuerFromStore(String keyStoreFile, String alias, char[] password, char[] keyPass);
+
+    IssuerData readIssuerFromStore(String alias);
 }

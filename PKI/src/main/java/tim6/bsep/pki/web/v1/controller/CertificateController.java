@@ -1,21 +1,27 @@
 package tim6.bsep.pki.web.v1.controller;
 
+import org.bouncycastle.asn1.x500.X500Name;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import tim6.bsep.pki.mapper.CertificateInfoMapper;
+import tim6.bsep.pki.service.implementation.CertificateServiceImpl;
+import tim6.bsep.pki.web.v1.dto.CreateCertificateDTO;
 
 @RestController
 @RequestMapping(value = "api/v1/certificates")
 public class CertificateController {
+
+    @Autowired
+    CertificateServiceImpl certificateServiceImpl;
 
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity getValidCertificates() {
         return null;
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+
     public ResponseEntity getRevokedCertificates() {
         return null;
     }
@@ -31,13 +37,17 @@ public class CertificateController {
     }
 
     @RequestMapping(value = "/ca", method = RequestMethod.POST, consumes = "application/json")
-    public ResponseEntity createCACertificate() {
-        return null;
+    public ResponseEntity createCACertificate(@RequestBody CreateCertificateDTO CACertificateDTO) {
+        X500Name subjectData = CertificateInfoMapper.nameFromDTO(CACertificateDTO);
+        certificateServiceImpl.createCertificate(CACertificateDTO.getIssuerAlias(), subjectData,true);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.POST, consumes = "application/json")
-    public ResponseEntity createLeafCertificate() {
-        return null;
+    @RequestMapping(value = "/leaf", method = RequestMethod.POST, consumes = "application/json")
+    public ResponseEntity createLeafCertificate(@RequestBody CreateCertificateDTO CertificateDTO) {
+        X500Name subjectData = CertificateInfoMapper.nameFromDTO(CertificateDTO);
+        certificateServiceImpl.createCertificate(CertificateDTO.getIssuerAlias(), subjectData,false);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     @RequestMapping(name = "/validate", method = RequestMethod.POST, consumes = "application/json")

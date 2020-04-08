@@ -1,9 +1,6 @@
 package tim6.bsep.pki.keystore;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -34,8 +31,9 @@ public class KeyStoreWriter {
         //Ako je cilj kreirati novi KeyStore poziva se i dalje load, pri cemu je prvi parametar null
         try {
             keyStore.load(null, password);
-            FileOutputStream fileOutputStream = new FileOutputStream(filepath + filename + ".jks");
+            FileOutputStream fileOutputStream = new FileOutputStream(filepath + filename);
             keyStore.store(fileOutputStream, password);
+            fileOutputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (NoSuchAlgorithmException e) {
@@ -83,10 +81,18 @@ public class KeyStoreWriter {
         }
     }
 
-    public void write(String alias, PrivateKey privateKey, char[] password, Certificate certificate) {
+    public void write(String alias, PrivateKey privateKey, char[] password, Certificate[] certificateChain) {
         try {
-            keyStore.setKeyEntry(alias, privateKey, password, new Certificate[] {certificate});
+            keyStore.setKeyEntry(alias, privateKey, password, certificateChain);
         } catch (KeyStoreException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void writeCertificate(String alias, Certificate certificate){
+        try{
+            keyStore.setCertificateEntry(alias, certificate);
+        }catch (KeyStoreException e){
             e.printStackTrace();
         }
     }
