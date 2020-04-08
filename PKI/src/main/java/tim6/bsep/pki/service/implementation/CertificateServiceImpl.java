@@ -67,8 +67,8 @@ public class CertificateServiceImpl implements CertificateService {
         subjectData.setSerialNumber(certInfo.getId().toString());
         X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, isCa);
         Certificate[] newCertificateChain = ArrayUtils.addAll(issuerCertificateChain, createdCertificate);
-        //keyStoreService.savePrivateKey(subjectData.getSerialNumber(), newCertificateChain, keyPair.getPrivate());
-        //keyStoreService.saveKeyStore();
+        keyStoreService.savePrivateKey(subjectData.getSerialNumber(), newCertificateChain, keyPair.getPrivate());
+        keyStoreService.saveKeyStore();
         return null;
     }
 
