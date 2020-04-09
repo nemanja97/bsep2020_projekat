@@ -23,7 +23,9 @@ import tim6.bsep.pki.service.KeyStoreService;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -57,7 +59,6 @@ public class CertificateServiceImpl implements CertificateService {
             dates = generateStartAndEndDate(12);
         }else{
             dates = generateStartAndEndDate(6);
-
         }
         subjectData.setStartDate(dates[0]);
         subjectData.setEndDate(dates[1]);
@@ -92,10 +93,6 @@ public class CertificateServiceImpl implements CertificateService {
         certInfo.setRevoked(false);
         certInfo.setRevocationReason("");
         return certificateInfoService.save(certInfo);
-    }
-
-    public boolean isCertificateValid() {
-        return false;
     }
 
     public boolean revokeCertificate(String id, CRLReason reason) throws CertificateException, OperatorCreationException {
@@ -139,5 +136,57 @@ public class CertificateServiceImpl implements CertificateService {
         }
 
         return false;
+    }
+
+    public boolean isCertificateValid(String id) {
+        X509Certificate certificate = (X509Certificate) keyStoreService.readCertificate(id);
+        if (certificate == null){
+            return false;
+        }
+        return isCertificateValid(certificate);
+    }
+
+    public boolean isCertificateValid(X509Certificate certificate) {
+        Certificate[] chain = keyStoreService.readCertificateChain(certificate.getSerialNumber().toString());
+
+        Date now = new Date();
+        X509Certificate x509cert;
+        for (int i = chain.length - 1; i >= 0; i--) {
+            x509cert = (X509Certificate) chain[i];
+
+            CertificateInfo certificateInfo = certificateInfoService.findById(x509cert.getSerialNumber().longValue());
+
+            if(certificateInfo.isRevoked()){
+                return false;
+            }
+
+            if(now.after(x509cert.getNotAfter()) || now.before(x509cert.getNotBefore())){
+                return false;
+            }
+
+            try {
+                if(i == 0){
+                    return isSelfSigned(x509cert);
+                }
+                X509Certificate issuer = (X509Certificate) chain[i-1];
+                x509cert.verify(issuer.getPublicKey());
+            } catch (SignatureException | InvalidKeyException e) {
+                return false;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return false;
+    }
+
+    public static boolean isSelfSigned(X509Certificate cert) {
+        try {
+            cert.verify(cert.getPublicKey());
+            return true;
+        } catch (SignatureException | InvalidKeyException e) {
+            return false;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

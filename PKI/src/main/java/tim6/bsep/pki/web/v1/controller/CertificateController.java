@@ -31,6 +31,11 @@ public class CertificateController {
         return null;
     }
 
+    @RequestMapping(value = "isValid/{id}", method = RequestMethod.GET)
+    public Boolean isValid(@PathVariable String id) {
+        return certificateServiceImpl.isCertificateValid(id);
+    }
+
     @RequestMapping(value = "/ca/{id}", method = RequestMethod.GET)
     public ResponseEntity getCertificatesOfCA(@PathVariable String id) {
         return null;

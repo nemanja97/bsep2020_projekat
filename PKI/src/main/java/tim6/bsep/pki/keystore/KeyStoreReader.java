@@ -13,6 +13,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Enumeration;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
@@ -86,8 +87,8 @@ public class KeyStoreReader {
             ks.load(in, keyStorePass.toCharArray());
 
             if(ks.isKeyEntry(alias)) {
-                Certificate cert = ks.getCertificate(alias);
-                return cert;
+                Certificate[] cert = ks.getCertificateChain(alias);
+                return cert[cert.length - 1];
             }
         } catch (KeyStoreException e) {
             e.printStackTrace();

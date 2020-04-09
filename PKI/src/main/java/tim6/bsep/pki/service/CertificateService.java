@@ -11,7 +11,9 @@ public interface CertificateService {
 
     X509Certificate createCertificate(String issuerAlias, X500Name subjectName, boolean isCa);
 
-    public boolean isCertificateValid();
+    public boolean isCertificateValid(String id);
+
+    public boolean isCertificateValid(X509Certificate certificate);
 
     public boolean revokeCertificate(String id, CRLReason reason) throws CertificateException, OperatorCreationException;
 }
