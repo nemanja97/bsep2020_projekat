@@ -2,6 +2,7 @@ package tim6.bsep.pki.service.implementation;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import tim6.bsep.pki.exceptions.CertificateNotFoundException;
 import tim6.bsep.pki.keystore.KeyStoreReader;
 import tim6.bsep.pki.keystore.KeyStoreWriter;
 import tim6.bsep.pki.model.IssuerData;
@@ -71,11 +72,11 @@ public class KeyStoreServiceImpl implements KeyStoreService {
         return keyStoreReader.readCertificateChain(this.keystore_path + this.keystore_name, this.keystore_password, alias);
     }
 
-    public IssuerData readIssuerFromStore(String keyStoreFile, String alias, char[] password, char[] keyPass) {
+    public IssuerData readIssuerFromStore(String keyStoreFile, String alias, char[] password, char[] keyPass) throws CertificateNotFoundException {
         return keyStoreReader.readIssuerFromStore(keyStoreFile, alias, password, keyPass);
     }
 
-    public IssuerData readIssuerFromStore(String alias){
+    public IssuerData readIssuerFromStore(String alias) throws CertificateNotFoundException {
         return keyStoreReader.readIssuerFromStore(this.keystore_path + this.keystore_name, alias, this.keystore_password.toCharArray(), this.keystore_password.toCharArray());
     }
 
