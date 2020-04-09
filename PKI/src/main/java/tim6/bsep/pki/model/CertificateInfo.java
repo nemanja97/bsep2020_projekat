@@ -1,5 +1,6 @@
 package tim6.bsep.pki.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,6 +23,8 @@ public class CertificateInfo {
 
     private String commonName;
 
+    @JsonFormat
+            (shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy hh:mm:ss")
     private Date startDate;
 
     private Date endDate;
@@ -31,4 +34,6 @@ public class CertificateInfo {
     private String revocationReason;
 
     public CertificateInfo(){ }
+
+
 }
