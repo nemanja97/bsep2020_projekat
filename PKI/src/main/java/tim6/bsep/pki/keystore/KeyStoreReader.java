@@ -18,6 +18,7 @@ import java.util.Enumeration;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 
+import tim6.bsep.pki.exceptions.CertificateNotFoundException;
 import tim6.bsep.pki.model.IssuerData;
 
 public class KeyStoreReader {
@@ -47,13 +48,15 @@ public class KeyStoreReader {
      * @param keyPass - lozinka koja je neophodna da se izvuce privatni kljuc
      * @return - podatke o izdavaocu i odgovarajuci privatni kljuc
      */
-    public IssuerData readIssuerFromStore(String keyStoreFile, String alias, char[] password, char[] keyPass) {
+    public IssuerData readIssuerFromStore(String keyStoreFile, String alias, char[] password, char[] keyPass) throws CertificateNotFoundException {
         try {
             //Datoteka se ucitava
             BufferedInputStream in = new BufferedInputStream(new FileInputStream(keyStoreFile));
             keyStore.load(in, password);
             //Iscitava se sertifikat koji ima dati alias
             Certificate cert = keyStore.getCertificate(alias);
+            if (cert == null)
+                throw new CertificateNotFoundException(alias);
             //Iscitava se privatni kljuc vezan za javni kljuc koji se nalazi na sertifikatu sa datim aliasom
             PrivateKey privKey = (PrivateKey) keyStore.getKey(alias, keyPass);
 
@@ -71,6 +74,8 @@ public class KeyStoreReader {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (CertificateNotFoundException e) {
+            throw e;
         }
         return null;
     }

@@ -1,6 +1,8 @@
 package tim6.bsep.pki.service;
 
+import tim6.bsep.pki.exceptions.CertificateNotFoundException;
 import tim6.bsep.pki.model.CertificateInfo;
+import tim6.bsep.pki.model.RevocationReason;
 import tim6.bsep.pki.model.SubjectData;
 
 public interface CertificateInfoService {
@@ -9,5 +11,5 @@ public interface CertificateInfoService {
 
     CertificateInfo save(CertificateInfo certInfo);
 
-    void remove(Long id);
+    CertificateInfo revoke(Long id, RevocationReason revocationReason) throws CertificateNotFoundException;
 }

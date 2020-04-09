@@ -1,6 +1,7 @@
 package tim6.bsep.pki.service;
 
 import org.springframework.beans.factory.annotation.Value;
+import tim6.bsep.pki.exceptions.CertificateNotFoundException;
 import tim6.bsep.pki.model.IssuerData;
 
 import java.security.PrivateKey;
@@ -34,7 +35,7 @@ public interface KeyStoreService {
 
     Certificate readCertificate(String alias);
 
-    IssuerData readIssuerFromStore(String keyStoreFile, String alias, char[] password, char[] keyPass);
+    IssuerData readIssuerFromStore(String keyStoreFile, String alias, char[] password, char[] keyPass) throws CertificateNotFoundException;
 
-    IssuerData readIssuerFromStore(String alias);
+    IssuerData readIssuerFromStore(String alias) throws CertificateNotFoundException;
 }

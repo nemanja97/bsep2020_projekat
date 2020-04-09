@@ -12,10 +12,13 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tim6.bsep.pki.exceptions.CertificateNotFoundException;
+import tim6.bsep.pki.exceptions.IssuerNotCAException;
 import tim6.bsep.pki.generator.CertificateGenerator;
 import tim6.bsep.pki.generator.KeyPairGenerator;
 import tim6.bsep.pki.model.CertificateInfo;
 import tim6.bsep.pki.model.IssuerData;
+import tim6.bsep.pki.model.RevocationReason;
 import tim6.bsep.pki.model.SubjectData;
 import tim6.bsep.pki.service.CertificateInfoService;
 import tim6.bsep.pki.service.CertificateService;
@@ -47,10 +50,22 @@ public class CertificateServiceImpl implements CertificateService {
         return null;
     }
 
-    public X509Certificate createCertificate(String issuerAlias, X500Name subjectName, boolean isCa) {
+    public X509Certificate createCertificate(String issuerAlias, X500Name subjectName, boolean isCa) throws CertificateNotFoundException, IssuerNotCAException {
         keyStoreService.loadKeyStore();
         Certificate[] issuerCertificateChain = keyStoreService.readCertificateChain(issuerAlias);
         IssuerData issuerData = keyStoreService.readIssuerFromStore(issuerAlias);
+
+        X509Certificate issuer = (X509Certificate) issuerCertificateChain[issuerCertificateChain.length - 1];
+
+        try {
+            if (issuer.getBasicConstraints() == -1 || !issuer.getKeyUsage()[5]) {
+                // Sertifikat nije CA
+                // https://stackoverflow.com/questions/12092457/how-to-check-if-x509certificate-is-ca-certificate
+                throw new IssuerNotCAException();
+            }
+        } catch (NullPointerException ignored) {
+        }
+
         KeyPair keyPair = KeyPairGenerator.generateKeyPair();
         SubjectData subjectData = new SubjectData();
         subjectData.setX500name(subjectName);
@@ -95,47 +110,13 @@ public class CertificateServiceImpl implements CertificateService {
         return certificateInfoService.save(certInfo);
     }
 
-    public boolean revokeCertificate(String id, CRLReason reason) throws CertificateException, OperatorCreationException {
-        X509Certificate certificate = (X509Certificate) keyStoreService.readCertificate(
-                keyStoreService.keystore_path,
-                keyStoreService.keystore_password,
-                id);
-        if (certificate == null)
-            throw new CertificateException("Certificate doesn't exist");
-
-        X509Certificate ca = (X509Certificate) keyStoreService.readCertificate(
-                keyStoreService.keystore_path,
-                keyStoreService.keystore_password,
-                certificate.getIssuerX500Principal().getName()
-        );
-        if (ca == null)
-            throw new CertificateException("Certificate authority doesn't exist");
-
-        IssuerData issuerData = keyStoreService.readIssuerFromStore(
-                keyStoreService.keystore_path,
-                ca.getSubjectX500Principal().getName(),
-                keyStoreService.keystore_password.toCharArray(),
-                ca.getPublicKey().toString().toCharArray()
-        );
-
-        Date now = new Date();
-        X509v2CRLBuilder crlBuilder = new X509v2CRLBuilder(issuerData.getX500name(), now);
-        crlBuilder.addCRLEntry((certificate).getSerialNumber(), now, Extensions.getInstance(reason.getValue()));
-
-        ContentSigner sigGen = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").
-                build(issuerData.getPrivateKey());
-        X509CRLHolder crlHolder = crlBuilder.build(sigGen);
-
+    public boolean revokeCertificate(Long id, RevocationReason reason) {
         try {
-            FileOutputStream fileOutputStream = new FileOutputStream("static/crls/" + ca.getSubjectX500Principal().getName() + ".crl");
-            fileOutputStream.write(crlHolder.getEncoded());
-            fileOutputStream.flush();
-            fileOutputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            CertificateInfo certInfo = certificateInfoService.revoke(id, reason);
+            return certInfo.isRevoked();
+        } catch (CertificateNotFoundException e) {
+            return false;
         }
-
-        return false;
     }
 
     public boolean isCertificateValid(String id) {
