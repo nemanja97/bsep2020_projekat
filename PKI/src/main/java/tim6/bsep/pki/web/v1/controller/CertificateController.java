@@ -1,5 +1,6 @@
 package tim6.bsep.pki.web.v1.controller;
 
+import com.google.gson.GsonBuilder;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -8,9 +9,14 @@ import org.springframework.web.bind.annotation.*;
 import tim6.bsep.pki.exceptions.CertificateNotFoundException;
 import tim6.bsep.pki.exceptions.IssuerNotCAException;
 import tim6.bsep.pki.mapper.CertificateInfoMapper;
+import tim6.bsep.pki.model.CertificateInfo;
+import tim6.bsep.pki.model.CertificateInfoWithChildren;
 import tim6.bsep.pki.model.RevocationReason;
+import tim6.bsep.pki.service.CertificateInfoService;
 import tim6.bsep.pki.service.implementation.CertificateServiceImpl;
 import tim6.bsep.pki.web.v1.dto.CreateCertificateDTO;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "api/v1/certificates")
@@ -19,29 +25,33 @@ public class CertificateController {
     @Autowired
     CertificateServiceImpl certificateServiceImpl;
 
+    @Autowired
+    CertificateInfoService certificateInfoService;
+
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity getValidCertificates() {
-        return null;
-    }
+    public ResponseEntity getCertificates(
+            @RequestParam(value = "onlyValid", required = false) Boolean onlyValid
+    ) {
+        Map<CertificateInfo, CertificateInfoWithChildren> nodeMap = certificateInfoService.findAll(onlyValid != null && onlyValid);
+        CertificateInfo root = certificateInfoService.findById(1L);
 
+        String json = new GsonBuilder().setPrettyPrinting()
+                .create()
+                .toJson(nodeMap.get(root));
 
-    public ResponseEntity getRevokedCertificates() {
-        return null;
+        return new ResponseEntity(json, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public ResponseEntity getCertificate(@PathVariable String id) {
+    public ResponseEntity getCertificate(
+            @PathVariable String id,
+            @RequestParam(value = "format", required = false) String format) {
         return null;
     }
 
     @RequestMapping(value = "isValid/{id}", method = RequestMethod.GET)
     public Boolean isValid(@PathVariable String id) {
         return certificateServiceImpl.isCertificateValid(id);
-    }
-
-    @RequestMapping(value = "/ca/{id}", method = RequestMethod.GET)
-    public ResponseEntity getCertificatesOfCA(@PathVariable String id) {
-        return null;
     }
 
     @RequestMapping(value = "/ca", method = RequestMethod.POST, consumes = "application/json")
