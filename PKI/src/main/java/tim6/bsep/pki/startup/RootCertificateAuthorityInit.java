@@ -53,9 +53,6 @@ public class RootCertificateAuthorityInit implements ApplicationRunner {
             createRootCA();
             keyStoreService.saveKeyStore();
         }
-        Certificate[] chain = keyStoreService.readCertificateChain("4");
-        PrivateKey privateKey = keyStoreService.readPrivateKey("4");
-        int a = 1 + 1;
     }
 
     private void createRootCA(){

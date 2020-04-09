@@ -13,7 +13,9 @@ public interface CertificateService {
 
     X509Certificate createCertificate(String issuerAlias, X500Name subjectName, boolean isCa) throws CertificateNotFoundException, IssuerNotCAException;
 
-    public boolean isCertificateValid();
+    public boolean isCertificateValid(String id);
+
+    public boolean isCertificateValid(X509Certificate certificate);
 
     boolean revokeCertificate(Long id, RevocationReason reason) throws CertificateException, OperatorCreationException;
 }
