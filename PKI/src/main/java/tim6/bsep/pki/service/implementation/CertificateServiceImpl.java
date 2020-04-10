@@ -58,13 +58,13 @@ public class CertificateServiceImpl implements CertificateService {
         return null;
     }
 
-    public X509Certificate createCertificate(String issuerAlias, X500Name subjectName, boolean isCa) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException {
+    public X509Certificate createCertificate(String issuerAlias, String alias, X500Name subjectName, boolean isCA) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException {
         keyStoreService.loadKeyStore();
         Certificate[] issuerCertificateChain = keyStoreService.readCertificateChain(issuerAlias);
         IssuerData issuerData = keyStoreService.readIssuerFromStore(issuerAlias);
 
         X509Certificate issuer = (X509Certificate) issuerCertificateChain[issuerCertificateChain.length - 1];
-        if (!isCertificateValid(issuer))
+        if (!isCertificateValid(issuerAlias))
             throw new IssuerNotValidException();
 
         try {
@@ -80,20 +80,20 @@ public class CertificateServiceImpl implements CertificateService {
         SubjectData subjectData = new SubjectData();
         subjectData.setX500name(subjectName);
         Date[] dates;
-        if(isCa){
-            dates = generateStartAndEndDate(12);
+        if(isCA){
+            dates = generateStartAndEndDate(24);
         }else{
-            dates = generateStartAndEndDate(6);
+            dates = generateStartAndEndDate(12);
         }
         subjectData.setStartDate(dates[0]);
         subjectData.setEndDate(dates[1]);
         subjectData.setPublicKey(keyPair.getPublic());
 
-        CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias);
+        CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, isCA);
         subjectData.setSerialNumber(certInfo.getId().toString());
-        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, isCa);
+        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, isCA);
         Certificate[] newCertificateChain = ArrayUtils.addAll(issuerCertificateChain, createdCertificate);
-        keyStoreService.savePrivateKey(subjectData.getSerialNumber(), newCertificateChain, keyPair.getPrivate());
+        keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
         return null;
     }
@@ -117,16 +117,18 @@ public class CertificateServiceImpl implements CertificateService {
         return new Date[] {startDate, endDate};
     }
 
-    private CertificateInfo generateCertificateInfoEntity(SubjectData subjectData, String issuerAlias){
+    private CertificateInfo generateCertificateInfoEntity(SubjectData subjectData, String issuerAlias, String alias, Boolean isCA){
         CertificateInfo certInfo = new CertificateInfo();
         String cn = subjectData.getX500name().getRDNs(BCStyle.CN)[0].getFirst().getValue().toString();
 
+        certInfo.setAlias(alias);
         certInfo.setCommonName(cn);
-        certInfo.setIssuerID(Long.parseLong(issuerAlias));
+        certInfo.setIssuerAlias(issuerAlias);
         certInfo.setStartDate(subjectData.getStartDate());
         certInfo.setEndDate(subjectData.getEndDate());
         certInfo.setRevoked(false);
         certInfo.setRevocationReason("");
+        certInfo.setCA(isCA);
         return certificateInfoService.save(certInfo);
     }
 
@@ -139,16 +141,12 @@ public class CertificateServiceImpl implements CertificateService {
         }
     }
 
-    public boolean isCertificateValid(String id) {
-        X509Certificate certificate = (X509Certificate) keyStoreService.readCertificate(id);
-        if (certificate == null){
+    public boolean isCertificateValid(String alias) {
+        Certificate[] chain = keyStoreService.readCertificateChain(alias);
+
+        if (chain == null){
             return false;
         }
-        return isCertificateValid(certificate);
-    }
-
-    public boolean isCertificateValid(X509Certificate certificate) {
-        Certificate[] chain = keyStoreService.readCertificateChain(certificate.getSerialNumber().toString());
 
         Date now = new Date();
         X509Certificate x509cert;
@@ -181,9 +179,9 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public X509Certificate findById(String id) {
+    public X509Certificate findByAlias(String alias) {
         keyStoreService.loadKeyStore();
-        return (X509Certificate) keyStoreService.readCertificate(id);
+        return (X509Certificate) keyStoreService.readCertificate(alias);
     }
 
     public static boolean isSelfSigned(X509Certificate cert) {

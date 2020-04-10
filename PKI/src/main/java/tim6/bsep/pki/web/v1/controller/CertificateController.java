@@ -53,11 +53,11 @@ public class CertificateController {
         return new ResponseEntity(json, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{alias}", method = RequestMethod.GET)
     public ResponseEntity getCertificate(
-            @PathVariable String id,
+            @PathVariable String alias,
             @RequestParam(value = "format", required = false, defaultValue = "text") String format) throws CertificateEncodingException, IOException, CertificateParsingException {
-        X509Certificate certificate = certificateServiceImpl.findById(id);
+        X509Certificate certificate = certificateServiceImpl.findByAlias(alias);
 
         switch (format) {
             case "pem":
@@ -89,14 +89,14 @@ public class CertificateController {
     @RequestMapping(value = "/ca", method = RequestMethod.POST, consumes = "application/json")
     public ResponseEntity createCACertificate(@RequestBody CreateCertificateDTO CACertificateDTO) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException {
         X500Name subjectData = CertificateInfoMapper.nameFromDTO(CACertificateDTO);
-        certificateServiceImpl.createCertificate(CACertificateDTO.getIssuerAlias(), subjectData,true);
+        certificateServiceImpl.createCertificate(CACertificateDTO.getIssuerAlias(), CACertificateDTO.getAlias(), subjectData,true);
         return new ResponseEntity(HttpStatus.OK);
     }
 
     @RequestMapping(value = "/leaf", method = RequestMethod.POST, consumes = "application/json")
     public ResponseEntity createLeafCertificate(@RequestBody CreateCertificateDTO CertificateDTO) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException {
         X500Name subjectData = CertificateInfoMapper.nameFromDTO(CertificateDTO);
-        certificateServiceImpl.createCertificate(CertificateDTO.getIssuerAlias(), subjectData,false);
+        certificateServiceImpl.createCertificate(CertificateDTO.getIssuerAlias(), CertificateDTO.getAlias(), subjectData,false);
         return new ResponseEntity(HttpStatus.OK);
     }
 

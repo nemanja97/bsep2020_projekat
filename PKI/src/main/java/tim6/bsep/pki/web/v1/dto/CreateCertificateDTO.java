@@ -11,6 +11,8 @@ public class CreateCertificateDTO {
 
     private String issuerAlias;
 
+    private String alias;
+
     private String commonName;
 
     private String organization;
@@ -21,6 +23,6 @@ public class CreateCertificateDTO {
 
     private String email;
 
-    private HashMap<String, String> extensions;
+    private String template;
 
 }
