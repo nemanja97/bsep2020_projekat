@@ -7,11 +7,15 @@ import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509v2CRLBuilder;
+import org.bouncycastle.openssl.PEMWriter;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.util.io.pem.PemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Base64Utils;
 import tim6.bsep.pki.exceptions.CertificateNotFoundException;
 import tim6.bsep.pki.exceptions.IssuerNotCAException;
 import tim6.bsep.pki.generator.CertificateGenerator;
@@ -26,10 +30,12 @@ import tim6.bsep.pki.service.KeyStoreService;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
@@ -86,6 +92,19 @@ public class CertificateServiceImpl implements CertificateService {
         keyStoreService.savePrivateKey(subjectData.getSerialNumber(), newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
         return null;
+    }
+
+    @Override
+    public String writeCertificateToPEM(String id) throws CertificateEncodingException, IOException {
+        keyStoreService.loadKeyStore();
+        X509Certificate certificate = (X509Certificate) keyStoreService.readCertificate(id);
+
+        StringWriter writer = new StringWriter();
+        JcaPEMWriter pemWriter = new JcaPEMWriter(writer);
+        pemWriter.writeObject(certificate);
+        pemWriter.flush();
+        pemWriter.close();
+        return writer.toString();
     }
 
     private Date[] generateStartAndEndDate(int months){
