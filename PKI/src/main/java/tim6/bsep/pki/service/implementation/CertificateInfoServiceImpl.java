@@ -49,6 +49,8 @@ public class CertificateInfoServiceImpl implements CertificateInfoService {
         return certificateInfoRepository.findById(id).orElse(null);
     }
 
+    public CertificateInfo findByAlias(String alias) { return certificateInfoRepository.findByAlias(alias); }
+
     public CertificateInfo save(CertificateInfo certInfo){
         return certificateInfoRepository.save(certInfo);
     }

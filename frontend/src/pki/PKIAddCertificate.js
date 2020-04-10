@@ -14,7 +14,7 @@ function PKIAddCertificate (){
             organizationUnit: "",
             country: "",
             email: "",
-            template: "",
+            template: "INTERMEDIATE_CA",
         }
     );
     const params = useParams();
