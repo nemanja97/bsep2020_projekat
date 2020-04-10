@@ -7,3 +7,4 @@
 3) Dodati novi realm ispod Master-a i kliknuti na opciju import
 4) Importovati realm-export.json
 5) Kreirati test korisnike
+6) Regenerisati PKI client Id odlaskom na putanju clients/PKI/credentials i odabirom polja `Regenerate secret`
