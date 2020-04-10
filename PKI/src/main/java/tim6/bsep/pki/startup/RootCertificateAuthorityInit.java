@@ -164,7 +164,7 @@ public class RootCertificateAuthorityInit implements ApplicationRunner {
         certInfo.setRevoked(false);
         certInfo.setRevocationReason("");
         certInfo.setIssuerAlias("root");
-        certInfo.setCA(true);
+        certInfo.setCA(false);
         return certificateInfoService.save(certInfo);
     }
 }
