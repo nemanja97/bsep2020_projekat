@@ -1,19 +1,12 @@
 package tim6.bsep.pki.generator;
 
-import java.math.BigInteger;
-import java.security.Security;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-
-import org.bouncycastle.asn1.x509.BasicConstraints;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.TargetInformation;
+import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -21,11 +14,17 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import tim6.bsep.pki.model.IssuerData;
 import tim6.bsep.pki.model.SubjectData;
 
+import java.math.BigInteger;
+import java.security.Security;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+
 
 public class CertificateGenerator {
     public CertificateGenerator() {}
 
-    public static  X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData, boolean isCA) {
+    public static  X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData, String template) {
         try {
             Security.addProvider(new BouncyCastleProvider());
             //Posto klasa za generisanje sertifiakta ne moze da primi direktno privatni kljuc pravi se builder za objekat
@@ -45,7 +44,29 @@ public class CertificateGenerator {
                     subjectData.getEndDate(),
                     subjectData.getX500name(),
                     subjectData.getPublicKey());
-            certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(isCA));
+
+            switch (template) {
+                case "INTERMEDIATE_CA":
+                    certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(true));
+                    certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.cRLSign | KeyUsage.digitalSignature | KeyUsage.keyCertSign));
+                    break;
+                case "TLS_SERVER":
+                    certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(true));
+                    certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.cRLSign | KeyUsage.digitalSignature | KeyUsage.keyCertSign));
+                    certGen.addExtension(Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_serverAuth));
+                    break;
+                case "SIEM_CENTER":
+                    certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
+                    certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.nonRepudiation | KeyUsage.digitalSignature | KeyUsage.keyEncipherment | KeyUsage.keyAgreement));
+                    certGen.addExtension(Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_clientAuth));
+                    break;
+                case "SIEM_AGENT":
+                    certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
+                    certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.nonRepudiation | KeyUsage.digitalSignature | KeyUsage.keyEncipherment));
+                    certGen.addExtension(Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_clientAuth));
+                    break;
+            }
+
             //Generise se sertifikat
             X509CertificateHolder certHolder = certGen.build(contentSigner);
 

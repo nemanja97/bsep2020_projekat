@@ -25,8 +25,6 @@ public class CertificateInfo {
 
     private String commonName;
 
-    @JsonFormat
-            (shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy hh:mm:ss")
     private Date startDate;
 
     private Date endDate;

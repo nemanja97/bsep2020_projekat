@@ -3,23 +3,13 @@ package tim6.bsep.pki.service.implementation;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
-import org.bouncycastle.asn1.x509.CRLReason;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.Extensions;
-import org.bouncycastle.cert.X509CRLHolder;
-import org.bouncycastle.cert.X509v2CRLBuilder;
-import org.bouncycastle.openssl.PEMWriter;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
-import org.bouncycastle.operator.ContentSigner;
-import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.bouncycastle.util.io.pem.PemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Base64Utils;
 import tim6.bsep.pki.exceptions.CertificateNotFoundException;
 import tim6.bsep.pki.exceptions.IssuerNotCAException;
 import tim6.bsep.pki.exceptions.IssuerNotValidException;
+import tim6.bsep.pki.exceptions.UnknownTemplateException;
 import tim6.bsep.pki.generator.CertificateGenerator;
 import tim6.bsep.pki.generator.KeyPairGenerator;
 import tim6.bsep.pki.model.CertificateInfo;
@@ -30,7 +20,6 @@ import tim6.bsep.pki.service.CertificateInfoService;
 import tim6.bsep.pki.service.CertificateService;
 import tim6.bsep.pki.service.KeyStoreService;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.security.InvalidKeyException;
@@ -38,11 +27,9 @@ import java.security.KeyPair;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.UUID;
 
 @Service
 public class CertificateServiceImpl implements CertificateService {
@@ -58,7 +45,7 @@ public class CertificateServiceImpl implements CertificateService {
         return null;
     }
 
-    public X509Certificate createCertificate(String issuerAlias, String alias, X500Name subjectName, boolean isCA) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException {
+    public X509Certificate createCertificate(String issuerAlias, String alias, X500Name subjectName, String template) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException, UnknownTemplateException {
         keyStoreService.loadKeyStore();
         Certificate[] issuerCertificateChain = keyStoreService.readCertificateChain(issuerAlias);
         IssuerData issuerData = keyStoreService.readIssuerFromStore(issuerAlias);
@@ -79,23 +66,87 @@ public class CertificateServiceImpl implements CertificateService {
         KeyPair keyPair = KeyPairGenerator.generateKeyPair();
         SubjectData subjectData = new SubjectData();
         subjectData.setX500name(subjectName);
-        Date[] dates;
-        if(isCA){
-            dates = generateStartAndEndDate(24);
-        }else{
-            dates = generateStartAndEndDate(12);
+
+        switch (template) {
+            case "INTERMEDIATE_CA":
+                createX509Certificate_INTERMEDIATE_CA(issuerAlias, alias, issuerCertificateChain, issuerData, keyPair, subjectData); return null;
+            case "TLS_SERVER":
+                createX509Certificate_TLS_SERVER(issuerAlias, alias, issuerCertificateChain, issuerData, keyPair, subjectData); return null;
+            case "SIEM_CENTER":
+                createX509Certificate_SIEM_CENTER(issuerAlias, alias, issuerCertificateChain, issuerData, keyPair, subjectData); return null;
+            case "SIEM_AGENT":
+                createX509Certificate_SIEM_AGENT(issuerAlias, alias, issuerCertificateChain, issuerData, keyPair, subjectData); return null;
+            default:
+                throw new UnknownTemplateException(template);
         }
+    }
+
+    private void createX509Certificate_INTERMEDIATE_CA(
+            String issuerAlias, String alias, Certificate[] issuerCertificateChain, IssuerData issuerData, KeyPair keyPair, SubjectData subjectData) {
+
+        Date[] dates;
+        dates = generateStartAndEndDate(24);
         subjectData.setStartDate(dates[0]);
         subjectData.setEndDate(dates[1]);
         subjectData.setPublicKey(keyPair.getPublic());
 
-        CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, isCA);
+        CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, true);
         subjectData.setSerialNumber(certInfo.getId().toString());
-        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, isCA);
+        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "INTERMEDIATE_CA");
         Certificate[] newCertificateChain = ArrayUtils.addAll(issuerCertificateChain, createdCertificate);
         keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
-        return null;
+    }
+
+    private void createX509Certificate_TLS_SERVER(
+            String issuerAlias, String alias, Certificate[] issuerCertificateChain, IssuerData issuerData, KeyPair keyPair, SubjectData subjectData) {
+
+        Date[] dates;
+        dates = generateStartAndEndDate(24);
+        subjectData.setStartDate(dates[0]);
+        subjectData.setEndDate(dates[1]);
+        subjectData.setPublicKey(keyPair.getPublic());
+
+        CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, true);
+        subjectData.setSerialNumber(certInfo.getId().toString());
+        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "TLS_SERVER");
+        Certificate[] newCertificateChain = ArrayUtils.addAll(issuerCertificateChain, createdCertificate);
+        keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
+        keyStoreService.saveKeyStore();
+    }
+
+    private void createX509Certificate_SIEM_CENTER(
+            String issuerAlias, String alias, Certificate[] issuerCertificateChain, IssuerData issuerData, KeyPair keyPair, SubjectData subjectData) {
+
+        Date[] dates;
+        dates = generateStartAndEndDate(12);
+        subjectData.setStartDate(dates[0]);
+        subjectData.setEndDate(dates[1]);
+        subjectData.setPublicKey(keyPair.getPublic());
+
+        CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, false);
+        subjectData.setSerialNumber(certInfo.getId().toString());
+        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "SIEM_CENTER");
+        Certificate[] newCertificateChain = ArrayUtils.addAll(issuerCertificateChain, createdCertificate);
+        keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
+        keyStoreService.saveKeyStore();
+    }
+
+    private void createX509Certificate_SIEM_AGENT(
+            String issuerAlias, String alias, Certificate[] issuerCertificateChain, IssuerData issuerData, KeyPair keyPair, SubjectData subjectData) {
+
+        Date[] dates;
+        dates = generateStartAndEndDate(12);
+        subjectData.setStartDate(dates[0]);
+        subjectData.setEndDate(dates[1]);
+        subjectData.setPublicKey(keyPair.getPublic());
+
+        CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, false);
+        subjectData.setSerialNumber(certInfo.getId().toString());
+        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "SIEM_AGENT");
+        Certificate[] newCertificateChain = ArrayUtils.addAll(issuerCertificateChain, createdCertificate);
+        keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
+        keyStoreService.saveKeyStore();
     }
 
     @Override
@@ -194,4 +245,6 @@ public class CertificateServiceImpl implements CertificateService {
             throw new RuntimeException(e);
         }
     }
+
+
 }
