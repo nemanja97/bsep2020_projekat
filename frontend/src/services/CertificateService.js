@@ -6,7 +6,8 @@ import jwt_decode from 'jwt-decode'
 export const CertificateService = {
     createCertificate,
     getAll,
-    get
+    get,
+    revoke
 }
 
 function createCertificate(certificate) {
@@ -22,4 +23,8 @@ function getAll(){
 
 function get(id){
     return axios.get(`${process.env.REACT_APP_API_URL}/v1/certificates/${id}`);
+}
+
+function revoke(id, reason){
+    return axios.delete(`${process.env.REACT_APP_API_URL}/v1/certificates/${id}?reason=${reason}`);
 }

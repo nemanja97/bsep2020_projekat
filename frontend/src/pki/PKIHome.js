@@ -40,12 +40,10 @@ function PKIHome() {
             cursor: 'pointer',
         };
         const buttonStyle = {
-            fontSize: 14,
-            fontWeight: 'bold',
             marginLeft: 24
         }
         return <span>{tag}<span onClick={handleClick(nodeData.alias)} style={contentStyle}> {nodeData.commonName}</span>
-            {(!revoked && !expired && isCA) && <button style={buttonStyle} onClick={handleAdd(nodeData.alias)}>issue new</button>}
+            {(!revoked && !expired && isCA) && <button style={buttonStyle} className="btn btn-primary" onClick={handleAdd(nodeData.alias)}>issue new</button>}
         </span>;
     }
 
