@@ -27,6 +27,8 @@ public class CertificateInfoWithChildren {
 
     private String revocationReason;
 
+    private boolean isCA;
+
     public CertificateInfoWithChildren(CertificateInfo certificateInfo) {
         this.id = certificateInfo.getId();
         this.issuerAlias = certificateInfo.getIssuerAlias();
@@ -35,6 +37,8 @@ public class CertificateInfoWithChildren {
         this.startDate = certificateInfo.getStartDate();
         this.endDate = certificateInfo.getEndDate();
         this.revoked = certificateInfo.isRevoked();
-        this.revocationReason = certificateInfo.getRevocationReason();    }
+        this.revocationReason = certificateInfo.getRevocationReason();
+        this.isCA = certificateInfo.isCA();
+    }
 
 }
