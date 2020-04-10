@@ -103,12 +103,12 @@ public class CertificateServiceImpl implements CertificateService {
             String issuerAlias, String alias, Certificate[] issuerCertificateChain, IssuerData issuerData, KeyPair keyPair, SubjectData subjectData) {
 
         Date[] dates;
-        dates = generateStartAndEndDate(24);
+        dates = generateStartAndEndDate(12);
         subjectData.setStartDate(dates[0]);
         subjectData.setEndDate(dates[1]);
         subjectData.setPublicKey(keyPair.getPublic());
 
-        CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, true);
+        CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, false);
         subjectData.setSerialNumber(certInfo.getId().toString());
         X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "TLS_SERVER");
         Certificate[] newCertificateChain = ArrayUtils.addAll(issuerCertificateChain, createdCertificate);
