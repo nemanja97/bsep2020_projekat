@@ -79,7 +79,7 @@ public class RootCertificateAuthorityInit implements ApplicationRunner {
 
         CertificateInfo certificateInfo = generateCertificateInfoEntity(subjectData);
         subjectData.setSerialNumber(certificateInfo.getId().toString());
-        Certificate rootCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, true);
+        Certificate rootCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "INTERMEDIATE_CA");
         keyStoreService.savePrivateKey("root", new Certificate[]{rootCertificate}, keyPair.getPrivate());
     }
 
@@ -131,7 +131,7 @@ public class RootCertificateAuthorityInit implements ApplicationRunner {
 
         CertificateInfo certificateInfo = generatePKICertificateInfoEntity(subjectData);
         subjectData.setSerialNumber(certificateInfo.getId().toString());
-        Certificate pkiCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, true);
+        Certificate pkiCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "TLS_SERVER");
         keyStoreService.savePrivateKey("PKI", new Certificate[]{pkiCertificate}, keyPair.getPrivate());
     }
 

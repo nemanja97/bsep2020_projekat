@@ -5,6 +5,7 @@ import org.bouncycastle.operator.OperatorCreationException;
 import tim6.bsep.pki.exceptions.CertificateNotFoundException;
 import tim6.bsep.pki.exceptions.IssuerNotCAException;
 import tim6.bsep.pki.exceptions.IssuerNotValidException;
+import tim6.bsep.pki.exceptions.UnknownTemplateException;
 import tim6.bsep.pki.model.RevocationReason;
 
 import java.io.IOException;
@@ -14,7 +15,7 @@ import java.security.cert.X509Certificate;
 
 public interface CertificateService {
 
-    X509Certificate createCertificate(String issuerAlias, String alias, X500Name subjectName, boolean isCa) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException;
+    X509Certificate createCertificate(String issuerAlias, String alias, X500Name subjectName, String template) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException, UnknownTemplateException;
 
     String writeCertificateToPEM(X509Certificate certificate) throws CertificateEncodingException, IOException;
 
