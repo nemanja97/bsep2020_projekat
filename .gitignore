@@ -89,3 +89,9 @@ fabric.properties
 # vendor/
 
 # ----------------------------------------------------------------------- Golang
+
+# logs
+PKI/logs/
+
+# keystore
+PKI/src/main/resources/keystore.jks
