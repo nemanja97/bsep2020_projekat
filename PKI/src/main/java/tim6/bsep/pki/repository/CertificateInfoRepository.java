@@ -10,4 +10,6 @@ public interface CertificateInfoRepository extends JpaRepository<CertificateInfo
 
     List<CertificateInfo> findAllByEndDateBeforeAndRevoked(Date date, boolean isRevoked);
 
+    CertificateInfo findByAlias(String alias);
+
 }

@@ -57,7 +57,6 @@ public class CertificateInfoMapper {
         certificateDTO.setOrganizationUnit(IETFUtils.valueToString(ou.getFirst().getValue()));
         certificateDTO.setEmail(IETFUtils.valueToString(e.getFirst().getValue()));
         certificateDTO.setCountry(IETFUtils.valueToString(c.getFirst().getValue()));
-        certificateDTO.setAlias(String.valueOf(certificate.getSerialNumber()));
 
         certificateDTO.setIssuer_commonName(IETFUtils.valueToString(issuer_cn.getFirst().getValue()));
         certificateDTO.setIssuer_organization(IETFUtils.valueToString(issuer_o.getFirst().getValue()));

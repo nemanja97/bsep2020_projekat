@@ -6,10 +6,7 @@ import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import tim6.bsep.pki.exceptions.CertificateNotFoundException;
-import tim6.bsep.pki.exceptions.IssuerNotCAException;
-import tim6.bsep.pki.exceptions.IssuerNotValidException;
-import tim6.bsep.pki.exceptions.UnknownTemplateException;
+import tim6.bsep.pki.exceptions.*;
 import tim6.bsep.pki.generator.CertificateGenerator;
 import tim6.bsep.pki.generator.KeyPairGenerator;
 import tim6.bsep.pki.model.CertificateInfo;
@@ -45,7 +42,7 @@ public class CertificateServiceImpl implements CertificateService {
         return null;
     }
 
-    public X509Certificate createCertificate(String issuerAlias, String alias, X500Name subjectName, String template) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException, UnknownTemplateException {
+    public X509Certificate createCertificate(String issuerAlias, String alias, X500Name subjectName, String template) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException, UnknownTemplateException, AliasAlreadyTakenException {
         keyStoreService.loadKeyStore();
         Certificate[] issuerCertificateChain = keyStoreService.readCertificateChain(issuerAlias);
         IssuerData issuerData = keyStoreService.readIssuerFromStore(issuerAlias);
@@ -62,6 +59,10 @@ public class CertificateServiceImpl implements CertificateService {
             }
         } catch (NullPointerException ignored) {
         }
+
+        CertificateInfo certInfo = certificateInfoService.findByAlias(alias);
+        if (certInfo != null && certInfo.getAlias().equals(alias))
+            throw new AliasAlreadyTakenException();
 
         KeyPair keyPair = KeyPairGenerator.generateKeyPair();
         SubjectData subjectData = new SubjectData();
