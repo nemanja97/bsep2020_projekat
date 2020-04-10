@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import tim6.bsep.pki.exceptions.CertificateNotFoundException;
 import tim6.bsep.pki.exceptions.IssuerNotCAException;
+import tim6.bsep.pki.exceptions.IssuerNotValidException;
 
 @ControllerAdvice
 public class ErrorHandlingAdvice {
@@ -24,6 +25,15 @@ public class ErrorHandlingAdvice {
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ResponseBody
     ValidationErrorResponse onIssuerNotCAException(IssuerNotCAException e){
+        ValidationErrorResponse error = new ValidationErrorResponse();
+        error.getViolations().add(new Violation("Cause", e.getMessage()));
+        return error;
+    }
+
+    @ExceptionHandler(IssuerNotValidException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    ValidationErrorResponse IssuerNotValidException(IssuerNotValidException e){
         ValidationErrorResponse error = new ValidationErrorResponse();
         error.getViolations().add(new Violation("Cause", e.getMessage()));
         return error;

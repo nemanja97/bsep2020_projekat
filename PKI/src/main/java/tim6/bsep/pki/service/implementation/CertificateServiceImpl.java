@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Base64Utils;
 import tim6.bsep.pki.exceptions.CertificateNotFoundException;
 import tim6.bsep.pki.exceptions.IssuerNotCAException;
+import tim6.bsep.pki.exceptions.IssuerNotValidException;
 import tim6.bsep.pki.generator.CertificateGenerator;
 import tim6.bsep.pki.generator.KeyPairGenerator;
 import tim6.bsep.pki.model.CertificateInfo;
@@ -56,12 +57,14 @@ public class CertificateServiceImpl implements CertificateService {
         return null;
     }
 
-    public X509Certificate createCertificate(String issuerAlias, X500Name subjectName, boolean isCa) throws CertificateNotFoundException, IssuerNotCAException {
+    public X509Certificate createCertificate(String issuerAlias, X500Name subjectName, boolean isCa) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException {
         keyStoreService.loadKeyStore();
         Certificate[] issuerCertificateChain = keyStoreService.readCertificateChain(issuerAlias);
         IssuerData issuerData = keyStoreService.readIssuerFromStore(issuerAlias);
 
         X509Certificate issuer = (X509Certificate) issuerCertificateChain[issuerCertificateChain.length - 1];
+        if (!isCertificateValid(issuer))
+            throw new IssuerNotValidException();
 
         try {
             if (issuer.getBasicConstraints() == -1 || !issuer.getKeyUsage()[5]) {
@@ -95,10 +98,7 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public String writeCertificateToPEM(String id) throws CertificateEncodingException, IOException {
-        keyStoreService.loadKeyStore();
-        X509Certificate certificate = (X509Certificate) keyStoreService.readCertificate(id);
-
+    public String writeCertificateToPEM(X509Certificate certificate) throws CertificateEncodingException, IOException {
         StringWriter writer = new StringWriter();
         JcaPEMWriter pemWriter = new JcaPEMWriter(writer);
         pemWriter.writeObject(certificate);
@@ -177,6 +177,12 @@ public class CertificateServiceImpl implements CertificateService {
             }
         }
         return false;
+    }
+
+    @Override
+    public X509Certificate findById(String id) {
+        keyStoreService.loadKeyStore();
+        return (X509Certificate) keyStoreService.readCertificate(id);
     }
 
     public static boolean isSelfSigned(X509Certificate cert) {
