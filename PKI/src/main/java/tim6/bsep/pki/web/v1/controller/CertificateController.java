@@ -5,10 +5,7 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import tim6.bsep.pki.exceptions.CertificateNotFoundException;
-import tim6.bsep.pki.exceptions.IssuerNotCAException;
-import tim6.bsep.pki.exceptions.IssuerNotValidException;
-import tim6.bsep.pki.exceptions.UnknownTemplateException;
+import tim6.bsep.pki.exceptions.*;
 import tim6.bsep.pki.mapper.CertificateInfoMapper;
 import tim6.bsep.pki.model.CertificateInfo;
 import tim6.bsep.pki.model.CertificateInfoWithChildren;
@@ -72,7 +69,10 @@ public class CertificateController {
                 headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
                 return new ResponseEntity<>(contents, headers, HttpStatus.OK);
             default:
+                CertificateInfo dbCert = certificateInfoService.findByAlias(alias);
                 CertificateDTO certificateDTO = CertificateInfoMapper.certificateDTOFromCertificate(certificate);
+                certificateDTO.setId(dbCert.getId());
+                certificateDTO.setAlias(alias);
                 return new ResponseEntity(certificateDTO, HttpStatus.OK);
         }
 
@@ -84,7 +84,7 @@ public class CertificateController {
     }
 
     @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json")
-    public ResponseEntity createCertificate(@RequestBody CreateCertificateDTO certificateDTO) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException, UnknownTemplateException {
+    public ResponseEntity createCertificate(@RequestBody CreateCertificateDTO certificateDTO) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException, UnknownTemplateException, AliasAlreadyTakenException {
         X500Name subjectData = CertificateInfoMapper.nameFromDTO(certificateDTO);
         certificateServiceImpl.createCertificate(certificateDTO.getIssuerAlias(), certificateDTO.getAlias(), subjectData, certificateDTO.getTemplate());
         return new ResponseEntity(HttpStatus.OK);

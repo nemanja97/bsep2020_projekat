@@ -9,6 +9,8 @@ import java.util.HashMap;
 @Setter
 public class CertificateDTO {
 
+    private Long id;
+
     private String alias;
 
     private String commonName;

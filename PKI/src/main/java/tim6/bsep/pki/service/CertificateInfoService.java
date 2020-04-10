@@ -13,6 +13,8 @@ public interface CertificateInfoService {
 
     CertificateInfo findById(Long id);
 
+    CertificateInfo findByAlias(String alias);
+
     CertificateInfo save(CertificateInfo certInfo);
 
     CertificateInfo revoke(Long id, RevocationReason revocationReason) throws CertificateNotFoundException;

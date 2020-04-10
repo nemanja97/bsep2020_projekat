@@ -5,9 +5,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import tim6.bsep.pki.exceptions.CertificateNotFoundException;
-import tim6.bsep.pki.exceptions.IssuerNotCAException;
-import tim6.bsep.pki.exceptions.IssuerNotValidException;
+import tim6.bsep.pki.exceptions.*;
 
 @ControllerAdvice
 public class ErrorHandlingAdvice {
@@ -33,7 +31,25 @@ public class ErrorHandlingAdvice {
     @ExceptionHandler(IssuerNotValidException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ResponseBody
-    ValidationErrorResponse IssuerNotValidException(IssuerNotValidException e){
+    ValidationErrorResponse onIssuerNotValidException(IssuerNotValidException e){
+        ValidationErrorResponse error = new ValidationErrorResponse();
+        error.getViolations().add(new Violation("Cause", e.getMessage()));
+        return error;
+    }
+
+    @ExceptionHandler(UnknownTemplateException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    ValidationErrorResponse onUnknownTemplateException(UnknownTemplateException e){
+        ValidationErrorResponse error = new ValidationErrorResponse();
+        error.getViolations().add(new Violation("Cause", e.getMessage()));
+        return error;
+    }
+
+    @ExceptionHandler(AliasAlreadyTakenException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    ValidationErrorResponse onAliasAlreadyTakenException(AliasAlreadyTakenException e){
         ValidationErrorResponse error = new ValidationErrorResponse();
         error.getViolations().add(new Violation("Cause", e.getMessage()));
         return error;
