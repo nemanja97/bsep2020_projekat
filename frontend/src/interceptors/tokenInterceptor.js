@@ -1,7 +1,5 @@
 import axios from 'axios'
-import moment from 'moment'
 import { AuthenticationService } from '../services/AuthenticationService'
-import jwt_decode from 'jwt-decode'
 
 export const setupInterceptors = () => {
     axios.interceptors.request.use((config) => {
@@ -16,11 +14,7 @@ export const setupInterceptors = () => {
     },
         function (error) {
             const originalRequest = error.config;
-            let dateNow = moment();
-            let tokenExp = jwt_decode(JSON.parse(localStorage.getItem("session")).token).exp;
-            let tokenDate = moment(1000 * tokenExp);
-            debugger
-            if (dateNow.isAfter(tokenDate) && !originalRequest._retry) {
+            if (AuthenticationService.checkTokensExp() && !originalRequest._retry) {
                 originalRequest._retry = true;
                 return AuthenticationService.refreshToken(originalRequest);
             }

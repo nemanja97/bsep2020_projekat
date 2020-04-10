@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { AuthenticationService } from '../services/AuthenticationService'
+import { useHistory } from 'react-router-dom';
 
 function Login() {
     const [user, setUser] = useState({ username: "", password: "" });
+    const history = useHistory();
 
     const handleChange = (name) => (event) => {
         const val = event.target.value;
@@ -11,7 +13,8 @@ function Login() {
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        AuthenticationService.authenticate(user);
+        AuthenticationService.authenticate(user)
+            .then(() => history.push("/pki"));
     }
     
     return (
