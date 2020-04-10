@@ -29,7 +29,7 @@ public class CertificateInfoServiceImpl implements CertificateInfoService {
         Map<CertificateInfo, List<CertificateInfo>> certificateInfoMap = new HashMap<>();
         certificateInfos.forEach(c -> certificateInfoMap.put(c, new ArrayList<>()));
         certificateInfoMap.replaceAll((k, v) -> certificateInfos.stream().filter(
-                c -> c.getIssuerID().equals(k.getId()) && !c.getIssuerID().equals(c.getId())).collect(Collectors.toList()));
+                c -> c.getIssuerAlias().equals(k.getAlias()) && !c.getIssuerAlias().equals(c.getId())).collect(Collectors.toList()));
 
         Map<CertificateInfo, CertificateInfoWithChildren> nodeMap = new HashMap<>();
 

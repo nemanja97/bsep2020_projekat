@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
+import tim6.bsep.pki.exceptions.CertificateNotFoundException;
 import tim6.bsep.pki.generator.CertificateGenerator;
 import tim6.bsep.pki.generator.KeyPairGenerator;
 import tim6.bsep.pki.model.CertificateInfo;
@@ -48,9 +49,14 @@ public class RootCertificateAuthorityInit implements ApplicationRunner {
         }else {
             keyStoreService.loadKeyStore();
         }
-        Certificate root = keyStoreService.readCertificate("1");
+        Certificate root = keyStoreService.readCertificate("root");
         if(root == null){
             createRootCA();
+            keyStoreService.saveKeyStore();
+        }
+        Certificate PKI = keyStoreService.readCertificate("PKI");
+        if(PKI == null){
+            createPKICA();
             keyStoreService.saveKeyStore();
         }
     }
@@ -67,17 +73,17 @@ public class RootCertificateAuthorityInit implements ApplicationRunner {
         subjectData.setX500name(rootName);
         subjectData.setPublicKey(keyPair.getPublic());
 
-        Date[] dates = generateStartAndEndDate();
+        Date[] dates = generateRootStartAndEndDate();
         subjectData.setStartDate(dates[0]);
         subjectData.setEndDate(dates[1]);
 
         CertificateInfo certificateInfo = generateCertificateInfoEntity(subjectData);
         subjectData.setSerialNumber(certificateInfo.getId().toString());
         Certificate rootCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, true);
-        keyStoreService.savePrivateKey(subjectData.getSerialNumber(), new Certificate[]{rootCertificate}, keyPair.getPrivate());
+        keyStoreService.savePrivateKey("root", new Certificate[]{rootCertificate}, keyPair.getPrivate());
     }
 
-    private Date[] generateStartAndEndDate(){
+    private Date[] generateRootStartAndEndDate(){
         Date startDate = new Date();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(startDate);
@@ -100,12 +106,65 @@ public class RootCertificateAuthorityInit implements ApplicationRunner {
         CertificateInfo certInfo = new CertificateInfo();
 
         certInfo.setCommonName("root");
+        certInfo.setAlias("root");
         certInfo.setStartDate(subjectData.getStartDate());
         certInfo.setEndDate(subjectData.getEndDate());
         certInfo.setRevoked(false);
         certInfo.setRevocationReason("");
-        certInfo = certificateInfoService.save(certInfo);
-        certInfo.setIssuerID(certInfo.getId());
+        certInfo.setIssuerAlias("root");
+        certInfo.setCA(true);
+        return certificateInfoService.save(certInfo);
+    }
+
+    private void createPKICA() throws CertificateNotFoundException {
+        X500Name pkiName = generatePKIInfo();
+        KeyPair keyPair = KeyPairGenerator.generateKeyPair();
+        SubjectData subjectData = new SubjectData();
+        IssuerData issuerData = keyStoreService.readIssuerFromStore("root");
+
+        subjectData.setX500name(pkiName);
+        subjectData.setPublicKey(keyPair.getPublic());
+
+        Date[] dates = generatePKIStartAndEndDate();
+        subjectData.setStartDate(dates[0]);
+        subjectData.setEndDate(dates[1]);
+
+        CertificateInfo certificateInfo = generatePKICertificateInfoEntity(subjectData);
+        subjectData.setSerialNumber(certificateInfo.getId().toString());
+        Certificate pkiCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, true);
+        keyStoreService.savePrivateKey("PKI", new Certificate[]{pkiCertificate}, keyPair.getPrivate());
+    }
+
+    private Date[] generatePKIStartAndEndDate(){
+        Date startDate = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(startDate);
+        calendar.add(Calendar.YEAR, 2);
+        Date endDate = calendar.getTime();
+        return new Date[] {startDate, endDate};
+    }
+
+    private X500Name generatePKIInfo(){
+        X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
+        builder.addRDN(BCStyle.CN, "PKI");
+        builder.addRDN(BCStyle.O, "BSEP-Tim6");
+        builder.addRDN(BCStyle.OU, "CA");
+        builder.addRDN(BCStyle.C, "RS");
+        builder.addRDN(BCStyle.E, "tim6@info.com");
+        return builder.build();
+    }
+
+    private CertificateInfo generatePKICertificateInfoEntity(SubjectData subjectData){
+        CertificateInfo certInfo = new CertificateInfo();
+
+        certInfo.setCommonName("PKI");
+        certInfo.setAlias("PKI");
+        certInfo.setStartDate(subjectData.getStartDate());
+        certInfo.setEndDate(subjectData.getEndDate());
+        certInfo.setRevoked(false);
+        certInfo.setRevocationReason("");
+        certInfo.setIssuerAlias("root");
+        certInfo.setCA(true);
         return certificateInfoService.save(certInfo);
     }
 }

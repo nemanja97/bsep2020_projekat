@@ -13,7 +13,7 @@ public class CertificateInfoWithChildren {
 
     private Long id;
 
-    private Long issuerId;
+    private String issuerAlias;
 
     private List<CertificateInfoWithChildren> issued;
 
@@ -29,7 +29,7 @@ public class CertificateInfoWithChildren {
 
     public CertificateInfoWithChildren(CertificateInfo certificateInfo) {
         this.id = certificateInfo.getId();
-        this.issuerId = certificateInfo.getIssuerID();
+        this.issuerAlias = certificateInfo.getIssuerAlias();
         this.issued = new ArrayList<>();
         this.commonName = certificateInfo.getCommonName();
         this.startDate = certificateInfo.getStartDate();
