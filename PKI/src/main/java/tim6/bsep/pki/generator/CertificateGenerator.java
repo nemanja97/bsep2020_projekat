@@ -51,7 +51,7 @@ public class CertificateGenerator {
                     certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.cRLSign | KeyUsage.digitalSignature | KeyUsage.keyCertSign));
                     break;
                 case "TLS_SERVER":
-                    certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(true));
+                    certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
                     certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.cRLSign | KeyUsage.digitalSignature | KeyUsage.keyCertSign));
                     certGen.addExtension(Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_serverAuth));
                     break;
