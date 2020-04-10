@@ -30,6 +30,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping(value = "api/v1/certificates")
+@CrossOrigin()
 public class CertificateController {
 
     @Autowired
