@@ -40,7 +40,7 @@ function refreshToken(originalRequest){
             'Content-Type': 'application/x-www-form-urlencoded'
         }
     }
-    axios.post(`${process.env.REACT_APP_AUTH_URL}`, qs.stringify(requestData), config)
+    return axios.post(`${process.env.REACT_APP_AUTH_URL}`, qs.stringify(requestData), config)
             .then(response => {
                if (response.status === 200) {
                    updateStorageToken(response)

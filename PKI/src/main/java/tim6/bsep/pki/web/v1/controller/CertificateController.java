@@ -40,6 +40,7 @@ public class CertificateController {
             @RequestParam(value = "onlyValid", required = false) Boolean onlyValid
     ) {
         Map<CertificateInfo, CertificateInfoWithChildren> nodeMap = certificateInfoService.findAll(onlyValid != null && onlyValid);
+
         CertificateInfo root = certificateInfoService.findById(1L);
 
         String json = new GsonBuilder().setPrettyPrinting()
