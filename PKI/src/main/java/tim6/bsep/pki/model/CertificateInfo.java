@@ -19,7 +19,9 @@ public class CertificateInfo {
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
 
-    private Long issuerID;
+    private String alias;
+
+    private String issuerAlias;
 
     private String commonName;
 
@@ -32,6 +34,8 @@ public class CertificateInfo {
     private boolean revoked;
 
     private String revocationReason;
+
+    private boolean isCA;
 
     public CertificateInfo(){ }
 

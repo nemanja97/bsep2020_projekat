@@ -14,15 +14,13 @@ import java.security.cert.X509Certificate;
 
 public interface CertificateService {
 
-    X509Certificate createCertificate(String issuerAlias, X500Name subjectName, boolean isCa) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException;
+    X509Certificate createCertificate(String issuerAlias, String alias, X500Name subjectName, boolean isCa) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException;
 
     String writeCertificateToPEM(X509Certificate certificate) throws CertificateEncodingException, IOException;
 
-    public boolean isCertificateValid(String id);
+    public boolean isCertificateValid(String alias);
 
-    public boolean isCertificateValid(X509Certificate certificate);
-
-    X509Certificate findById(String id);
+    X509Certificate findByAlias(String alias);
 
     boolean revokeCertificate(Long id, RevocationReason reason) throws CertificateException, OperatorCreationException;
 }
