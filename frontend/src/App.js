@@ -14,7 +14,7 @@ function App() {
     <Router>
       <Switch>
         <Route path='/login' component={Login}/>
-        <PrivateRoute exact path='/pki' component={PKIHome}/>
+        <PrivateRoute exact path='/pki' component={PKIHome} roles={['PKI admin']}/>
       </Switch>
     </Router>
   );
