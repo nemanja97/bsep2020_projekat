@@ -10,7 +10,7 @@ export const CertificateService = {
 }
 
 function createCertificate(certificate) {
-    return axios.post(`${process.env.REACT_APP_API_URL}/v1/certificates/create`, qs.stringify(certificate))
+    return axios.post(`${process.env.REACT_APP_API_URL}/v1/certificates/create`, certificate)
         .then(response => {
             console.log(response);
         })

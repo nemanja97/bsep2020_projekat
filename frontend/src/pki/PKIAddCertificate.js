@@ -14,7 +14,7 @@ function PKIAddCertificate (){
             organizationUnit: "",
             country: "",
             email: "",
-            template: "INTERMEDIATE_CA",
+            template: "",
         }
     );
     const params = useParams();
@@ -82,8 +82,8 @@ function PKIAddCertificate (){
 
                         <div className="form-group">
                             <label for="template">Template</label>
-                            <select id="template" value={certificate} onChange={handleChange("template")} class="form-control">
-                                <option value="INTERMEDIATE_CA" selected>Intermediate CA</option>
+                            <select id="template" value={certificate.template} onChange={handleChange("template")} class="form-control">
+                                <option value="INTERMEDIATE_CA">Intermediate CA</option>
                                 <option value="TLS_SERVER">TLS server certificate</option>
                                 <option value="SIEM_CENTER">SIEM center</option>
                                 <option value="SIEM_AGENT">SIEM agent</option>

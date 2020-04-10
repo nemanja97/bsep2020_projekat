@@ -44,8 +44,8 @@ function PKIHome() {
             fontWeight: 'bold',
             marginLeft: 24
         }
-        return <span>{tag}<span onClick={handleClick(nodeData.id)} style={contentStyle}> {nodeData.commonName}</span>
-            {(!revoked && !expired && isCA) && <button style={buttonStyle} onClick={handleAdd(nodeData.id)}>issue new</button>}
+        return <span>{tag}<span onClick={handleClick(nodeData.alias)} style={contentStyle}> {nodeData.commonName}</span>
+            {(!revoked && !expired && isCA) && <button style={buttonStyle} onClick={handleAdd(nodeData.alias)}>issue new</button>}
         </span>;
     }
 
