@@ -47,7 +47,7 @@ public class CertificateServiceImpl implements CertificateService {
         Certificate[] issuerCertificateChain = keyStoreService.readCertificateChain(issuerAlias);
         IssuerData issuerData = keyStoreService.readIssuerFromStore(issuerAlias);
 
-        X509Certificate issuer = (X509Certificate) issuerCertificateChain[issuerCertificateChain.length - 1];
+        X509Certificate issuer = (X509Certificate) issuerCertificateChain[0];
         if (!isCertificateValid(issuerAlias))
             throw new IssuerNotValidException();
 
@@ -94,7 +94,7 @@ public class CertificateServiceImpl implements CertificateService {
         CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, true);
         subjectData.setSerialNumber(certInfo.getId().toString());
         X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "INTERMEDIATE_CA");
-        Certificate[] newCertificateChain = ArrayUtils.addAll(issuerCertificateChain, createdCertificate);
+        Certificate[] newCertificateChain = ArrayUtils.addFirst(issuerCertificateChain, createdCertificate);
         keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
     }
@@ -111,7 +111,7 @@ public class CertificateServiceImpl implements CertificateService {
         CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, false);
         subjectData.setSerialNumber(certInfo.getId().toString());
         X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "TLS_SERVER");
-        Certificate[] newCertificateChain = ArrayUtils.addAll(issuerCertificateChain, createdCertificate);
+        Certificate[] newCertificateChain = ArrayUtils.addFirst(issuerCertificateChain, createdCertificate);
         keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
     }
@@ -128,7 +128,7 @@ public class CertificateServiceImpl implements CertificateService {
         CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, false);
         subjectData.setSerialNumber(certInfo.getId().toString());
         X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "SIEM_CENTER");
-        Certificate[] newCertificateChain = ArrayUtils.addAll(issuerCertificateChain, createdCertificate);
+        Certificate[] newCertificateChain = ArrayUtils.addFirst(issuerCertificateChain, createdCertificate);
         keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
     }
@@ -145,7 +145,7 @@ public class CertificateServiceImpl implements CertificateService {
         CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, false);
         subjectData.setSerialNumber(certInfo.getId().toString());
         X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "SIEM_AGENT");
-        Certificate[] newCertificateChain = ArrayUtils.addAll(issuerCertificateChain, createdCertificate);
+        Certificate[] newCertificateChain = ArrayUtils.addFirst(issuerCertificateChain, createdCertificate);
         keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
     }

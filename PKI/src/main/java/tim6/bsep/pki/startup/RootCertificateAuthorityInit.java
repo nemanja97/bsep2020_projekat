@@ -132,7 +132,8 @@ public class RootCertificateAuthorityInit implements ApplicationRunner {
         CertificateInfo certificateInfo = generatePKICertificateInfoEntity(subjectData);
         subjectData.setSerialNumber(certificateInfo.getId().toString());
         Certificate pkiCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "TLS_SERVER");
-        keyStoreService.savePrivateKey("PKI", new Certificate[]{pkiCertificate}, keyPair.getPrivate());
+        Certificate root = keyStoreService.readCertificate("root");
+        keyStoreService.savePrivateKey("PKI", new Certificate[]{pkiCertificate, root}, keyPair.getPrivate());
     }
 
     private Date[] generatePKIStartAndEndDate(){
