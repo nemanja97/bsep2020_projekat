@@ -93,7 +93,7 @@ public class KeyStoreReader {
 
             if(ks.isKeyEntry(alias)) {
                 Certificate[] cert = ks.getCertificateChain(alias);
-                return cert[cert.length - 1];
+                return cert[0];
             }
         } catch (KeyStoreException e) {
             e.printStackTrace();
