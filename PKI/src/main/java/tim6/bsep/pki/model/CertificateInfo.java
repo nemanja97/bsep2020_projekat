@@ -3,10 +3,7 @@ package tim6.bsep.pki.model;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Date;
 
 @Getter
@@ -32,7 +29,13 @@ public class CertificateInfo {
 
     private String revocationReason;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date revocationDate;
+
     private boolean isCA;
+
+    @Enumerated(EnumType.STRING)
+    private Template template;
 
     public CertificateInfo(){ }
 

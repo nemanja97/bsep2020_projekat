@@ -10,10 +10,7 @@ import org.springframework.stereotype.Service;
 import tim6.bsep.pki.exceptions.*;
 import tim6.bsep.pki.generator.CertificateGenerator;
 import tim6.bsep.pki.generator.KeyPairGenerator;
-import tim6.bsep.pki.model.CertificateInfo;
-import tim6.bsep.pki.model.IssuerData;
-import tim6.bsep.pki.model.RevocationReason;
-import tim6.bsep.pki.model.SubjectData;
+import tim6.bsep.pki.model.*;
 import tim6.bsep.pki.service.CertificateInfoService;
 import tim6.bsep.pki.service.CertificateService;
 import tim6.bsep.pki.service.KeyStoreService;
@@ -93,9 +90,9 @@ public class CertificateServiceImpl implements CertificateService {
         subjectData.setEndDate(dates[1]);
         subjectData.setPublicKey(keyPair.getPublic());
 
-        CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, true);
+        CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, true, Template.INTERMEDIATE_CA);
         subjectData.setSerialNumber(certInfo.getId().toString());
-        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "INTERMEDIATE_CA", keyPair, false, issuerCertificateChain[0]);
+        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, Template.INTERMEDIATE_CA, keyPair, false, issuerCertificateChain[0]);
         Certificate[] newCertificateChain = ArrayUtils.insert(0, issuerCertificateChain, createdCertificate);
         keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
@@ -110,9 +107,9 @@ public class CertificateServiceImpl implements CertificateService {
         subjectData.setEndDate(dates[1]);
         subjectData.setPublicKey(keyPair.getPublic());
 
-        CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, false);
+        CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, false, Template.TLS_SERVER);
         subjectData.setSerialNumber(certInfo.getId().toString());
-        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "TLS_SERVER", keyPair, false,  issuerCertificateChain[0]);
+        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, Template.TLS_SERVER, keyPair, false,  issuerCertificateChain[0]);
         Certificate[] newCertificateChain = ArrayUtils.insert(0, issuerCertificateChain, createdCertificate);
         keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
@@ -127,9 +124,9 @@ public class CertificateServiceImpl implements CertificateService {
         subjectData.setEndDate(dates[1]);
         subjectData.setPublicKey(keyPair.getPublic());
 
-        CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, false);
+        CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, false, Template.SIEM_CENTER);
         subjectData.setSerialNumber(certInfo.getId().toString());
-        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "SIEM_CENTER", keyPair, false,  issuerCertificateChain[0]);
+        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, Template.SIEM_CENTER, keyPair, false,  issuerCertificateChain[0]);
         Certificate[] newCertificateChain = ArrayUtils.insert(0, issuerCertificateChain, createdCertificate);
         keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
@@ -144,9 +141,9 @@ public class CertificateServiceImpl implements CertificateService {
         subjectData.setEndDate(dates[1]);
         subjectData.setPublicKey(keyPair.getPublic());
 
-        CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, false);
+        CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, false, Template.SIEM_AGENT);
         subjectData.setSerialNumber(certInfo.getId().toString());
-        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "SIEM_AGENT", keyPair, false,  issuerCertificateChain[0]);
+        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, Template.SIEM_AGENT, keyPair, false,  issuerCertificateChain[0]);
         Certificate[] newCertificateChain = ArrayUtils.insert(0, issuerCertificateChain, createdCertificate);
         keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
@@ -183,7 +180,7 @@ public class CertificateServiceImpl implements CertificateService {
         return new Date[] {startDate, endDate};
     }
 
-    private CertificateInfo generateCertificateInfoEntity(SubjectData subjectData, String issuerAlias, String alias, Boolean isCA){
+    private CertificateInfo generateCertificateInfoEntity(SubjectData subjectData, String issuerAlias, String alias, Boolean isCA, Template template){
         CertificateInfo certInfo = new CertificateInfo();
         String cn = subjectData.getX500name().getRDNs(BCStyle.CN)[0].getFirst().getValue().toString();
 
@@ -195,6 +192,7 @@ public class CertificateServiceImpl implements CertificateService {
         certInfo.setRevoked(false);
         certInfo.setRevocationReason("");
         certInfo.setCA(isCA);
+        certInfo.setTemplate(template);
         return certificateInfoService.save(certInfo);
     }
 

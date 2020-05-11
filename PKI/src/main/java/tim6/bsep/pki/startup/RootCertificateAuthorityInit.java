@@ -14,6 +14,7 @@ import tim6.bsep.pki.generator.KeyPairGenerator;
 import tim6.bsep.pki.model.CertificateInfo;
 import tim6.bsep.pki.model.IssuerData;
 import tim6.bsep.pki.model.SubjectData;
+import tim6.bsep.pki.model.Template;
 import tim6.bsep.pki.service.CertificateInfoService;
 import tim6.bsep.pki.service.KeyStoreService;
 
@@ -76,7 +77,7 @@ public class RootCertificateAuthorityInit implements ApplicationRunner {
 
         CertificateInfo certificateInfo = generateCertificateInfoEntity(subjectData);
         subjectData.setSerialNumber(certificateInfo.getId().toString());
-        Certificate rootCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "INTERMEDIATE_CA", keyPair, true, null);
+        Certificate rootCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, Template.INTERMEDIATE_CA, keyPair, true, null);
         keyStoreService.savePrivateKey("root", new Certificate[]{rootCertificate}, keyPair.getPrivate());
     }
 
@@ -110,6 +111,7 @@ public class RootCertificateAuthorityInit implements ApplicationRunner {
         certInfo.setRevocationReason("");
         certInfo.setIssuerAlias("root");
         certInfo.setCA(true);
+        certInfo.setTemplate(Template.INTERMEDIATE_CA);
         return certificateInfoService.save(certInfo);
     }
 
@@ -129,7 +131,7 @@ public class RootCertificateAuthorityInit implements ApplicationRunner {
         CertificateInfo certificateInfo = generatePKICertificateInfoEntity(subjectData);
         subjectData.setSerialNumber(certificateInfo.getId().toString());
         Certificate root = keyStoreService.readCertificate("root");
-        Certificate pkiCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "TLS_SERVER", keyPair, false, root);
+        Certificate pkiCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, Template.TLS_SERVER, keyPair, false, root);
         keyStoreService.savePrivateKey("PKI", new Certificate[]{pkiCertificate, root}, keyPair.getPrivate());
     }
 
@@ -163,6 +165,7 @@ public class RootCertificateAuthorityInit implements ApplicationRunner {
         certInfo.setRevocationReason("");
         certInfo.setIssuerAlias("root");
         certInfo.setCA(false);
+        certInfo.setTemplate(Template.TLS_SERVER);
         return certificateInfoService.save(certInfo);
     }
 }

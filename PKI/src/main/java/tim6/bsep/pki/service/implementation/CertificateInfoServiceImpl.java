@@ -61,6 +61,7 @@ public class CertificateInfoServiceImpl implements CertificateInfoService {
             throw new CertificateNotFoundException(id.toString());
         certInfo.setRevoked(true);
         certInfo.setRevocationReason(revocationReason.toString());
+        certInfo.setRevocationDate(new Date());
         return certificateInfoRepository.save(certInfo);
     }
 }

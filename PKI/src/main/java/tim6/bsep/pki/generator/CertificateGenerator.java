@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import tim6.bsep.pki.keystore.KeyStoreReader;
 import tim6.bsep.pki.model.IssuerData;
 import tim6.bsep.pki.model.SubjectData;
+import tim6.bsep.pki.model.Template;
 import tim6.bsep.pki.service.KeyStoreService;
 import tim6.bsep.pki.service.implementation.KeyStoreServiceImpl;
 
@@ -35,7 +36,7 @@ public class CertificateGenerator {
     public CertificateGenerator() {
     }
 
-    public static  X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData, String template, KeyPair keyPair, boolean isSelfSigned, java.security.cert.Certificate issuer) {
+    public static  X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData, Template template, KeyPair keyPair, boolean isSelfSigned, java.security.cert.Certificate issuer) {
         try {
             Security.addProvider(new BouncyCastleProvider());
             //Posto klasa za generisanje sertifiakta ne moze da primi direktno privatni kljuc pravi se builder za objekat
@@ -68,30 +69,28 @@ public class CertificateGenerator {
                 authorityKeyIdentifier = certificateExtensionUtils.createAuthorityKeyIdentifier(issuer.getPublicKey());
             }
             certGen.addExtension(Extension.authorityKeyIdentifier, false, authorityKeyIdentifier);
+            certGen.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(new GeneralName(GeneralName.dNSName, "localhost")));
 
             switch (template) {
-                case "INTERMEDIATE_CA":
+                case INTERMEDIATE_CA:
                     certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(true));
                     certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.cRLSign | KeyUsage.digitalSignature | KeyUsage.keyCertSign));
                     break;
-                case "TLS_SERVER":
+                case TLS_SERVER:
                     certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
                     certGen.addExtension(Extension.keyUsage, true,
                             new KeyUsage( KeyUsage.nonRepudiation | KeyUsage.digitalSignature | KeyUsage.encipherOnly | KeyUsage.keyEncipherment | KeyUsage.keyAgreement));
                     certGen.addExtension(Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_serverAuth));
-                    certGen.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(new GeneralName(GeneralName.dNSName, "localhost")));
                     break;
-                case "SIEM_CENTER":
+                case SIEM_CENTER:
                     certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
                     certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.nonRepudiation | KeyUsage.digitalSignature | KeyUsage.keyEncipherment | KeyUsage.keyAgreement));
                     certGen.addExtension(Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_clientAuth));
-                    certGen.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(new GeneralName(GeneralName.dNSName, "localhost")));
                     break;
-                case "SIEM_AGENT":
+                case SIEM_AGENT:
                     certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
                     certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.nonRepudiation | KeyUsage.digitalSignature | KeyUsage.keyEncipherment));
                     certGen.addExtension(Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_clientAuth));
-                    certGen.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(new GeneralName(GeneralName.dNSName, "localhost")));
                     break;
             }
 
