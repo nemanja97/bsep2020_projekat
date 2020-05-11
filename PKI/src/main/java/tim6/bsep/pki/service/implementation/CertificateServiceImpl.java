@@ -95,7 +95,7 @@ public class CertificateServiceImpl implements CertificateService {
 
         CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, true);
         subjectData.setSerialNumber(certInfo.getId().toString());
-        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "INTERMEDIATE_CA");
+        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "INTERMEDIATE_CA", keyPair, false, issuerCertificateChain[0]);
         Certificate[] newCertificateChain = ArrayUtils.insert(0, issuerCertificateChain, createdCertificate);
         keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
@@ -112,7 +112,7 @@ public class CertificateServiceImpl implements CertificateService {
 
         CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, false);
         subjectData.setSerialNumber(certInfo.getId().toString());
-        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "TLS_SERVER");
+        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "TLS_SERVER", keyPair, false,  issuerCertificateChain[0]);
         Certificate[] newCertificateChain = ArrayUtils.insert(0, issuerCertificateChain, createdCertificate);
         keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
@@ -129,7 +129,7 @@ public class CertificateServiceImpl implements CertificateService {
 
         CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, false);
         subjectData.setSerialNumber(certInfo.getId().toString());
-        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "SIEM_CENTER");
+        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "SIEM_CENTER", keyPair, false,  issuerCertificateChain[0]);
         Certificate[] newCertificateChain = ArrayUtils.insert(0, issuerCertificateChain, createdCertificate);
         keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
@@ -146,7 +146,7 @@ public class CertificateServiceImpl implements CertificateService {
 
         CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, false);
         subjectData.setSerialNumber(certInfo.getId().toString());
-        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "SIEM_AGENT");
+        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "SIEM_AGENT", keyPair, false,  issuerCertificateChain[0]);
         Certificate[] newCertificateChain = ArrayUtils.insert(0, issuerCertificateChain, createdCertificate);
         keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
