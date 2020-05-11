@@ -45,6 +45,9 @@ public class CertificateGenerator {
                     subjectData.getX500name(),
                     subjectData.getPublicKey());
 
+            certGen.addExtension(Extension.subjectAlternativeName, false,
+                    new GeneralNames(new GeneralName(GeneralName.dNSName, "localhost")));
+
             switch (template) {
                 case "INTERMEDIATE_CA":
                     certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(true));
