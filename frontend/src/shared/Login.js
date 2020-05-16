@@ -28,11 +28,11 @@ function Login() {
                             <form onSubmit={handleSubmit}>
                                 <div className="form-group">
                                     <label html-for="username">Username</label>
-                                    <input className="form-control" type="text" name="username" onChange={handleChange("username")}/>
+                                    <input className="form-control" type="text" name="username" onChange={handleChange("username")} required/>
                                 </div>
                                 <div className="form-group">
                                     <label html-for="password">Password</label>
-                                    <input className="form-control" type="password" name="password" onChange={handleChange("password")}/>
+                                    <input className="form-control" type="password" name="password" onChange={handleChange("password")} required/>
                                 </div>
                                 <button type="submit" className="btn btn-primary">Login</button>
                             </form>

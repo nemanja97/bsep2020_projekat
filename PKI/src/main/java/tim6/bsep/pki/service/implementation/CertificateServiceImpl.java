@@ -56,8 +56,8 @@ public class CertificateServiceImpl implements CertificateService {
         } catch (NullPointerException ignored) {
         }
 
-        CertificateInfo certInfo = certificateInfoService.findByAlias(alias);
-        if (certInfo != null && certInfo.getAlias().equals(alias))
+        CertificateInfo certInfo = certificateInfoService.findByAliasIgnoreCase(alias);
+        if (certInfo != null)
             throw new AliasAlreadyTakenException();
 
         KeyPair keyPair = KeyPairGenerator.generateKeyPair();

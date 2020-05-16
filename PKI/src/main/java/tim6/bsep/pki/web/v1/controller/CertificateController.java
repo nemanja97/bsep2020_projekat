@@ -19,6 +19,7 @@ import tim6.bsep.pki.utility.SignatureUtility;
 import tim6.bsep.pki.web.v1.dto.CertificateDTO;
 import tim6.bsep.pki.web.v1.dto.CreateCertificateDTO;
 
+import javax.validation.Valid;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
@@ -121,7 +122,7 @@ public class CertificateController {
     }
 
     @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json")
-    public ResponseEntity<Object> createCertificate(@RequestBody CreateCertificateDTO certificateDTO) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException, UnknownTemplateException, AliasAlreadyTakenException {
+    public ResponseEntity<Object> createCertificate(@Valid @RequestBody CreateCertificateDTO certificateDTO) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException, UnknownTemplateException, AliasAlreadyTakenException {
         X500Name subjectData = CertificateInfoMapper.nameFromDTO(certificateDTO);
         certificateServiceImpl.createCertificate(certificateDTO.getIssuerAlias(), certificateDTO.getAlias(), subjectData, certificateDTO.getTemplate());
         return new ResponseEntity<>(HttpStatus.OK);
