@@ -2,6 +2,8 @@ package tim6.bsep.pki.web.v1.controller;
 
 import com.google.gson.GsonBuilder;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -14,6 +16,7 @@ import tim6.bsep.pki.model.RevocationReason;
 import tim6.bsep.pki.service.CertificateInfoService;
 import tim6.bsep.pki.service.KeyStoreService;
 import tim6.bsep.pki.service.implementation.CertificateServiceImpl;
+import tim6.bsep.pki.utility.SignatureUtility;
 import tim6.bsep.pki.web.v1.dto.CertificateDTO;
 import tim6.bsep.pki.web.v1.dto.CreateCertificateDTO;
 
@@ -41,6 +44,10 @@ public class CertificateController {
 
     @Autowired
     KeyStoreService keyStoreService;
+
+    @Autowired
+    SignatureUtility signatureUtility;
+
 
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity getCertificates(
@@ -115,9 +122,16 @@ public class CertificateController {
 
     }
 
-    @RequestMapping(value = "isValid/{id}", method = RequestMethod.GET)
-    public Boolean isValid(@PathVariable String id) {
-        return certificateServiceImpl.isCertificateValid(id);
+    @RequestMapping(value = "isValid", method = RequestMethod.POST)
+    public ResponseEntity isValid(@RequestBody byte[] msg) throws CMSException, OperatorCreationException, IOException, CertificateEncodingException {
+        if(signatureUtility.verifySignature(msg, "SIEMCenter")) {
+            String alias = signatureUtility.extractMessage(msg);
+            boolean isValid = certificateServiceImpl.isCertificateValid(alias);
+            byte[] signedMsg = signatureUtility.signMessage(String.valueOf(isValid));
+            return new ResponseEntity(signedMsg, HttpStatus.OK);
+        }else{
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+        }
     }
 
     @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json")
