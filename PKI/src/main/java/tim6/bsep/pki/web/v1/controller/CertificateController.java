@@ -4,7 +4,6 @@ import com.google.gson.GsonBuilder;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.util.io.pem.PemObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +21,7 @@ import tim6.bsep.pki.web.v1.dto.CreateCertificateDTO;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Map;
@@ -107,14 +107,17 @@ public class CertificateController {
 
     @RequestMapping(value = "isValid", method = RequestMethod.POST)
     public ResponseEntity isValid(@RequestBody byte[] msg) throws CMSException, OperatorCreationException, IOException, CertificateEncodingException {
-        if(signatureUtility.verifySignature(msg, "SIEMCenter")) {
-            String alias = signatureUtility.extractMessage(msg);
-            boolean isValid = certificateServiceImpl.isCertificateValid(alias);
-            byte[] signedMsg = signatureUtility.signMessage(String.valueOf(isValid));
-            return new ResponseEntity(signedMsg, HttpStatus.OK);
-        }else{
+        if (certificateServiceImpl.isCertificateValid("SIEMCenter"))
+            if(signatureUtility.verifySignature(msg, "SIEMCenter")) {
+                String alias = signatureUtility.extractMessage(msg);
+                boolean isValid = certificateServiceImpl.isCertificateValid(alias);
+                byte[] signedMsg = signatureUtility.signMessage(String.valueOf(isValid));
+                return new ResponseEntity(signedMsg, HttpStatus.OK);
+            }else{
+                return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+            }
+        else
             return new ResponseEntity(HttpStatus.UNAUTHORIZED);
-        }
     }
 
     @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json")
