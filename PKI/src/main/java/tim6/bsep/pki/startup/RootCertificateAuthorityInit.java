@@ -16,12 +16,9 @@ import tim6.bsep.pki.model.IssuerData;
 import tim6.bsep.pki.model.SubjectData;
 import tim6.bsep.pki.service.CertificateInfoService;
 import tim6.bsep.pki.service.KeyStoreService;
-import tim6.bsep.pki.service.implementation.KeyStoreServiceImpl;
 
 import java.io.File;
 import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.util.Calendar;
 import java.util.Date;
@@ -56,7 +53,7 @@ public class RootCertificateAuthorityInit implements ApplicationRunner {
         }
         Certificate PKI = keyStoreService.readCertificate("PKI");
         if(PKI == null){
-            createPKICA();
+            createPKI();
             keyStoreService.saveKeyStore();
         }
     }
@@ -116,7 +113,7 @@ public class RootCertificateAuthorityInit implements ApplicationRunner {
         return certificateInfoService.save(certInfo);
     }
 
-    private void createPKICA() throws CertificateNotFoundException {
+    private void createPKI() throws CertificateNotFoundException {
         X500Name pkiName = generatePKIInfo();
         KeyPair keyPair = KeyPairGenerator.generateKeyPair();
         SubjectData subjectData = new SubjectData();
@@ -132,7 +129,8 @@ public class RootCertificateAuthorityInit implements ApplicationRunner {
         CertificateInfo certificateInfo = generatePKICertificateInfoEntity(subjectData);
         subjectData.setSerialNumber(certificateInfo.getId().toString());
         Certificate pkiCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, "TLS_SERVER");
-        keyStoreService.savePrivateKey("PKI", new Certificate[]{pkiCertificate}, keyPair.getPrivate());
+        Certificate root = keyStoreService.readCertificate("root");
+        keyStoreService.savePrivateKey("PKI", new Certificate[]{pkiCertificate, root}, keyPair.getPrivate());
     }
 
     private Date[] generatePKIStartAndEndDate(){
