@@ -51,6 +51,8 @@ public class CertificateInfoServiceImpl implements CertificateInfoService {
 
     public CertificateInfo findByAlias(String alias) { return certificateInfoRepository.findByAlias(alias); }
 
+    public CertificateInfo findByAliasIgnoreCase(String alias){ return certificateInfoRepository.findFirstByAliasContainingIgnoreCase(alias); }
+
     public CertificateInfo save(CertificateInfo certInfo){
         return certificateInfoRepository.save(certInfo);
     }

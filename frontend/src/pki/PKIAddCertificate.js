@@ -17,6 +17,10 @@ function PKIAddCertificate (){
             template: "INTERMEDIATE_CA",
         }
     );
+    const [error, setError] = useState({
+        message:"",
+        show: "hidden"
+    });
     const params = useParams();
     const history = useHistory();
 
@@ -31,7 +35,8 @@ function PKIAddCertificate (){
         console.log(certificate);
 
         CertificateService.createCertificate(certificate)
-            .then(() => history.push('/pki'));
+            .then(() => history.push('/pki'))
+            .catch((error) => setError({show: "visible", message:error.response.data.violations[0].message}))
     }
 
     return (
@@ -80,7 +85,7 @@ function PKIAddCertificate (){
                         </div>
                         <div className="form-group">
                             <label htmlFor="country">Country ISO-code</label>
-                            <input type="text" className="form-control" id="country" placeholder="Country ISO-code" onChange={handleChange("country")} required/>
+                            <input type="text" className="form-control" id="country" placeholder="Country ISO-code" onChange={handleChange("country")} minLength="2" maxLength="2" style={{textTransform:"uppercase"}} required/>
                         </div>
                         <div className="form-group">
                             <label htmlFor="contact-email">Contact email</label>
@@ -98,6 +103,7 @@ function PKIAddCertificate (){
                         </div>
                         <button type="submit" className="btn btn-primary">Create certificate</button>
                     </form>
+                    <div style={{fontSize:"24px", color:"red", visibility: error.show}}>{error.message}</div>
                 </div>
             </div>
         </div>

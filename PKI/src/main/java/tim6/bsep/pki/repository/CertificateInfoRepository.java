@@ -12,4 +12,6 @@ public interface CertificateInfoRepository extends JpaRepository<CertificateInfo
 
     CertificateInfo findByAlias(String alias);
 
+    CertificateInfo findFirstByAliasContainingIgnoreCase(String alias);
+
 }
