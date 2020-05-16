@@ -15,6 +15,7 @@ import tim6.bsep.pki.service.CertificateInfoService;
 import tim6.bsep.pki.service.CertificateService;
 import tim6.bsep.pki.service.KeyStoreService;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.security.InvalidKeyException;
@@ -22,10 +23,11 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Service
 public class CertificateServiceImpl implements CertificateService {
@@ -35,11 +37,6 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Autowired
     private CertificateInfoService certificateInfoService;
-
-    public X509Certificate createSelfSignedCertificate() {
-        KeyPair keyPair = KeyPairGenerator.generateKeyPair();
-        return null;
-    }
 
     public X509Certificate createCertificate(String issuerAlias, String alias, X500Name subjectName, String template) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException, UnknownTemplateException, AliasAlreadyTakenException {
         keyStoreService.loadKeyStore();
@@ -64,18 +61,24 @@ public class CertificateServiceImpl implements CertificateService {
             throw new AliasAlreadyTakenException();
 
         KeyPair keyPair = KeyPairGenerator.generateKeyPair();
+        assert keyPair != null;
+
         SubjectData subjectData = new SubjectData();
         subjectData.setX500name(subjectName);
 
         switch (template) {
             case "INTERMEDIATE_CA":
-                createX509Certificate_INTERMEDIATE_CA(issuerAlias, alias, issuerCertificateChain, issuerData, keyPair, subjectData); return null;
+                createX509Certificate_INTERMEDIATE_CA(issuerAlias, alias, issuerCertificateChain, issuerData, keyPair, subjectData);
+                return null;
             case "TLS_SERVER":
-                createX509Certificate_TLS_SERVER(issuerAlias, alias, issuerCertificateChain, issuerData, keyPair, subjectData); return null;
+                createX509Certificate_TLS_SERVER(issuerAlias, alias, issuerCertificateChain, issuerData, keyPair, subjectData);
+                return null;
             case "SIEM_CENTER":
-                createX509Certificate_SIEM_CENTER(issuerAlias, alias, issuerCertificateChain, issuerData, keyPair, subjectData); return null;
+                createX509Certificate_SIEM_CENTER(issuerAlias, alias, issuerCertificateChain, issuerData, keyPair, subjectData);
+                return null;
             case "SIEM_AGENT":
-                createX509Certificate_SIEM_AGENT(issuerAlias, alias, issuerCertificateChain, issuerData, keyPair, subjectData); return null;
+                createX509Certificate_SIEM_AGENT(issuerAlias, alias, issuerCertificateChain, issuerData, keyPair, subjectData);
+                return null;
             default:
                 throw new UnknownTemplateException(template);
         }
@@ -109,7 +112,7 @@ public class CertificateServiceImpl implements CertificateService {
 
         CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, false, Template.TLS_SERVER);
         subjectData.setSerialNumber(certInfo.getId().toString());
-        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, Template.TLS_SERVER, keyPair, false,  issuerCertificateChain[0]);
+        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, Template.TLS_SERVER, keyPair, false, issuerCertificateChain[0]);
         Certificate[] newCertificateChain = ArrayUtils.insert(0, issuerCertificateChain, createdCertificate);
         keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
@@ -126,7 +129,7 @@ public class CertificateServiceImpl implements CertificateService {
 
         CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, false, Template.SIEM_CENTER);
         subjectData.setSerialNumber(certInfo.getId().toString());
-        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, Template.SIEM_CENTER, keyPair, false,  issuerCertificateChain[0]);
+        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, Template.SIEM_CENTER, keyPair, false, issuerCertificateChain[0]);
         Certificate[] newCertificateChain = ArrayUtils.insert(0, issuerCertificateChain, createdCertificate);
         keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
@@ -143,44 +146,65 @@ public class CertificateServiceImpl implements CertificateService {
 
         CertificateInfo certInfo = generateCertificateInfoEntity(subjectData, issuerAlias, alias, false, Template.SIEM_AGENT);
         subjectData.setSerialNumber(certInfo.getId().toString());
-        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, Template.SIEM_AGENT, keyPair, false,  issuerCertificateChain[0]);
+        X509Certificate createdCertificate = CertificateGenerator.generateCertificate(subjectData, issuerData, Template.SIEM_AGENT, keyPair, false, issuerCertificateChain[0]);
         Certificate[] newCertificateChain = ArrayUtils.insert(0, issuerCertificateChain, createdCertificate);
         keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
     }
 
     @Override
-    public String writeCertificateToPEM(X509Certificate certificate) throws CertificateEncodingException, IOException {
-        StringWriter writer = new StringWriter();
-        JcaPEMWriter pemWriter = new JcaPEMWriter(writer);
-        pemWriter.writeObject(certificate);
-        pemWriter.flush();
-        pemWriter.close();
-        return writer.toString();
+    public ByteArrayOutputStream getPemCertificateChainWithPrivateKey(String alias) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
+
+        ZipEntry pemEntry = new ZipEntry("certificate.crt");
+        ZipEntry keyEntry = new ZipEntry("certificate.key");
+
+        zipOutputStream.putNextEntry(pemEntry);
+        zipOutputStream.write(getPemCertificateChain(alias).getBytes());
+        zipOutputStream.closeEntry();
+
+        zipOutputStream.putNextEntry(keyEntry);
+        zipOutputStream.write(getPemPrivateKey(alias).getBytes());
+        zipOutputStream.closeEntry();
+
+        zipOutputStream.finish();
+        zipOutputStream.close();
+
+        outputStream.flush();
+        outputStream.close();
+
+        return outputStream;
     }
 
     @Override
-    public String writePrivateKeyToPEM(PrivateKey privateKey) throws CertificateEncodingException, IOException {
-        PemObject pemFile = new PemObject("PRIVATE KEY", privateKey.getEncoded());
+    public String getPemCertificateChain(String alias) throws IOException {
+        Certificate[] chain = keyStoreService.readCertificateChain(alias);
 
-        StringWriter writer = new StringWriter();
-        JcaPEMWriter pemWriter = new JcaPEMWriter(writer);
-        pemWriter.writeObject(pemFile);
-        pemWriter.flush();
-        pemWriter.close();
-        return writer.toString();
+        StringBuilder chainBuilder = new StringBuilder();
+        for (Certificate c : chain) {
+            String pemCertificate = writeCertificateToPEM((X509Certificate) c);
+            chainBuilder.append(pemCertificate);
+        }
+        return chainBuilder.toString();
     }
 
-    private Date[] generateStartAndEndDate(int months){
+    @Override
+    public String getPemPrivateKey(String alias) throws IOException {
+        PrivateKey privateKey = keyStoreService.readPrivateKey(alias);
+        return writePrivateKeyToPEM(privateKey);
+    }
+
+    private Date[] generateStartAndEndDate(int months) {
         Date startDate = new Date();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(startDate);
         calendar.add(Calendar.MONTH, months);
         Date endDate = calendar.getTime();
-        return new Date[] {startDate, endDate};
+        return new Date[]{startDate, endDate};
     }
 
-    private CertificateInfo generateCertificateInfoEntity(SubjectData subjectData, String issuerAlias, String alias, Boolean isCA, Template template){
+    private CertificateInfo generateCertificateInfoEntity(SubjectData subjectData, String issuerAlias, String alias, Boolean isCA, Template template) {
         CertificateInfo certInfo = new CertificateInfo();
         String cn = subjectData.getX500name().getRDNs(BCStyle.CN)[0].getFirst().getValue().toString();
 
@@ -208,7 +232,7 @@ public class CertificateServiceImpl implements CertificateService {
     public boolean isCertificateValid(String alias) {
         Certificate[] chain = keyStoreService.readCertificateChain(alias);
 
-        if (chain == null){
+        if (chain == null) {
             return false;
         }
 
@@ -219,16 +243,16 @@ public class CertificateServiceImpl implements CertificateService {
 
             CertificateInfo certificateInfo = certificateInfoService.findById(x509cert.getSerialNumber().longValue());
 
-            if(certificateInfo.isRevoked()){
+            if (certificateInfo.isRevoked()) {
                 return false;
             }
 
-            if(now.after(x509cert.getNotAfter()) || now.before(x509cert.getNotBefore())){
+            if (now.after(x509cert.getNotAfter()) || now.before(x509cert.getNotBefore())) {
                 return false;
             }
 
             try {
-                if(i == chain.length - 1){
+                if (i == chain.length - 1) {
                     return isSelfSigned(x509cert);
                 }
                 X509Certificate issuer = (X509Certificate) chain[i + 1];
@@ -259,5 +283,24 @@ public class CertificateServiceImpl implements CertificateService {
         }
     }
 
+    public String writeCertificateToPEM(X509Certificate certificate) throws IOException {
+        StringWriter writer = new StringWriter();
+        JcaPEMWriter pemWriter = new JcaPEMWriter(writer);
+        pemWriter.writeObject(certificate);
+        pemWriter.flush();
+        pemWriter.close();
+        return writer.toString();
+    }
+
+    public String writePrivateKeyToPEM(PrivateKey privateKey) throws IOException {
+        PemObject pemFile = new PemObject("PRIVATE KEY", privateKey.getEncoded());
+
+        StringWriter writer = new StringWriter();
+        JcaPEMWriter pemWriter = new JcaPEMWriter(writer);
+        pemWriter.writeObject(pemFile);
+        pemWriter.flush();
+        pemWriter.close();
+        return writer.toString();
+    }
 
 }

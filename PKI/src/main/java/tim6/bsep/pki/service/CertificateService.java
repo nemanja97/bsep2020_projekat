@@ -5,8 +5,8 @@ import org.bouncycastle.operator.OperatorCreationException;
 import tim6.bsep.pki.exceptions.*;
 import tim6.bsep.pki.model.RevocationReason;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.security.PrivateKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -15,11 +15,13 @@ public interface CertificateService {
 
     X509Certificate createCertificate(String issuerAlias, String alias, X500Name subjectName, String template) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException, UnknownTemplateException, AliasAlreadyTakenException;
 
-    String writeCertificateToPEM(X509Certificate certificate) throws CertificateEncodingException, IOException;
+    ByteArrayOutputStream getPemCertificateChainWithPrivateKey(String alias) throws IOException, CertificateEncodingException;
 
-    String writePrivateKeyToPEM(PrivateKey privateKey) throws CertificateEncodingException, IOException;
+    String getPemCertificateChain(String alias) throws IOException, CertificateEncodingException;
 
-    public boolean isCertificateValid(String alias);
+    String getPemPrivateKey(String alias) throws IOException, CertificateEncodingException;
+
+    boolean isCertificateValid(String alias);
 
     X509Certificate findByAlias(String alias);
 
