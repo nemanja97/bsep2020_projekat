@@ -5,26 +5,38 @@ import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import tim6.bsep.pki.keystore.KeyStoreReader;
 import tim6.bsep.pki.model.IssuerData;
 import tim6.bsep.pki.model.SubjectData;
+import tim6.bsep.pki.model.Template;
+import tim6.bsep.pki.service.KeyStoreService;
+import tim6.bsep.pki.service.implementation.KeyStoreServiceImpl;
 
 import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-
+@Component
 public class CertificateGenerator {
-    public CertificateGenerator() {}
 
-    public static  X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData, String template) {
+    public CertificateGenerator() {
+    }
+
+    public static  X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData, Template template, KeyPair keyPair, boolean isSelfSigned, java.security.cert.Certificate issuer) {
         try {
             Security.addProvider(new BouncyCastleProvider());
             //Posto klasa za generisanje sertifiakta ne moze da primi direktno privatni kljuc pravi se builder za objekat
@@ -45,25 +57,37 @@ public class CertificateGenerator {
                     subjectData.getX500name(),
                     subjectData.getPublicKey());
 
-            certGen.addExtension(Extension.subjectAlternativeName, false,
-                    new GeneralNames(new GeneralName(GeneralName.dNSName, "localhost")));
+            JcaX509ExtensionUtils certificateExtensionUtils = new JcaX509ExtensionUtils();
+
+            SubjectKeyIdentifier subjectKeyIdentifier = certificateExtensionUtils.createSubjectKeyIdentifier(keyPair.getPublic());
+            certGen.addExtension(Extension.subjectKeyIdentifier, false, subjectKeyIdentifier);
+
+            AuthorityKeyIdentifier authorityKeyIdentifier = null;
+            if (isSelfSigned) {
+                authorityKeyIdentifier = certificateExtensionUtils.createAuthorityKeyIdentifier(keyPair.getPublic());
+            } else {
+                authorityKeyIdentifier = certificateExtensionUtils.createAuthorityKeyIdentifier(issuer.getPublicKey());
+            }
+            certGen.addExtension(Extension.authorityKeyIdentifier, false, authorityKeyIdentifier);
+            certGen.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(new GeneralName(GeneralName.dNSName, "localhost")));
 
             switch (template) {
-                case "INTERMEDIATE_CA":
+                case INTERMEDIATE_CA:
                     certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(true));
                     certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.cRLSign | KeyUsage.digitalSignature | KeyUsage.keyCertSign));
                     break;
-                case "TLS_SERVER":
+                case TLS_SERVER:
                     certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
-                    certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.cRLSign | KeyUsage.digitalSignature | KeyUsage.keyCertSign));
+                    certGen.addExtension(Extension.keyUsage, true,
+                            new KeyUsage( KeyUsage.nonRepudiation | KeyUsage.digitalSignature | KeyUsage.encipherOnly | KeyUsage.keyEncipherment | KeyUsage.keyAgreement));
                     certGen.addExtension(Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_serverAuth));
                     break;
-                case "SIEM_CENTER":
+                case SIEM_CENTER:
                     certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
                     certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.nonRepudiation | KeyUsage.digitalSignature | KeyUsage.keyEncipherment | KeyUsage.keyAgreement));
                     certGen.addExtension(Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_clientAuth));
                     break;
-                case "SIEM_AGENT":
+                case SIEM_AGENT:
                     certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
                     certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.nonRepudiation | KeyUsage.digitalSignature | KeyUsage.keyEncipherment));
                     certGen.addExtension(Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_clientAuth));
@@ -90,7 +114,7 @@ public class CertificateGenerator {
             e.printStackTrace();
         } catch (CertificateException e) {
             e.printStackTrace();
-        } catch (CertIOException e) {
+        } catch (CertIOException | NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
         return null;
