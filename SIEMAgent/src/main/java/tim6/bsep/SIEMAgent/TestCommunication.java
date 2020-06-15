@@ -1,6 +1,7 @@
 package tim6.bsep.SIEMAgent;
 
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -14,11 +15,15 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import tim6.bsep.SIEMAgent.model.enums.FacilityType;
+import tim6.bsep.SIEMAgent.model.enums.LogType;
+import tim6.bsep.SIEMAgent.model.enums.SeverityLevel;
 import tim6.bsep.SIEMAgent.utility.SignatureUtility;
+import tim6.bsep.SIEMAgent.web.v1.dto.LogDTO;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.*;
 import java.security.KeyStore;
+import java.util.Date;
 
 @Component
 public class TestCommunication implements ApplicationRunner {
@@ -33,7 +38,9 @@ public class TestCommunication implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        String msg = "test";
+        LogDTO logDTO = new LogDTO(new Date(), FacilityType.AUTH, SeverityLevel.WARNING, "localhost", "test", LogType.SIMULATED);
+
+//        String msg = "test";
         KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
         keyStore.load(new FileInputStream(new ClassPathResource(keyStoreName).getFile()),
                 password.toCharArray());
@@ -49,7 +56,20 @@ public class TestCommunication implements ApplicationRunner {
         CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(socketFactory).build();
         ClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
         RestTemplate restTemplate = new RestTemplate(requestFactory);
-        byte[] signedData = SignatureUtility.signMessage(msg, keyStoreName, password, serverCertificateAlias);
-        ResponseEntity<String> response = restTemplate.postForEntity("https://localhost:8044/api/v1/test", signedData, String.class);
+        byte[] signedData = SignatureUtility.signMessage(toJson(logDTO), keyStoreName, password, serverCertificateAlias);
+        System.out.println(String.format("SIGNED DATA LEN %s", signedData.length));
+        ResponseEntity<String> response = restTemplate.postForEntity("https://localhost:8044/api/v1/logs", signedData, String.class);
+    }
+
+    private String toJson(LogDTO logDTO) {
+        ObjectMapper mapper = new ObjectMapper();
+        String json = "";
+        try {
+            json = mapper.writeValueAsString(logDTO);
+            System.out.println("ResultingJSONstring = " + json);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return json;
     }
 }

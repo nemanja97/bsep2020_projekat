@@ -20,8 +20,8 @@ public class TestController {
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity testCommunication(@RequestBody  byte[] signedMessage) throws IOException, CMSException {
         if(SignatureUtility.checkMessage(signedMessage)){
-            String msg = SignatureUtility.extractMessage(signedMessage);
-            System.out.println(msg);
+//            String msg = SignatureUtility.extractMessage(signedMessage);
+//            System.out.println(msg);
             return new ResponseEntity(HttpStatus.OK);
         }else{
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
