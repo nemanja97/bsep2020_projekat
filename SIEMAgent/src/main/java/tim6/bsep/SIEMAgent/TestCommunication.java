@@ -58,7 +58,7 @@ public class TestCommunication implements ApplicationRunner {
         RestTemplate restTemplate = new RestTemplate(requestFactory);
         byte[] signedData = SignatureUtility.signMessage(toJson(logDTO), keyStoreName, password, serverCertificateAlias);
         System.out.println(String.format("SIGNED DATA LEN %s", signedData.length));
-        ResponseEntity<String> response = restTemplate.postForEntity("https://localhost:8044/api/v1/logs", signedData, String.class);
+        ResponseEntity<String> response = restTemplate.postForEntity("https://localhost:8044/api/v1/logs/receive", signedData, String.class);
     }
 
     private String toJson(LogDTO logDTO) {

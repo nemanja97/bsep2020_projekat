@@ -15,7 +15,13 @@ function Login() {
     const handleSubmit = (event) => {
         event.preventDefault();
         AuthenticationService.authenticate(user)
-            .then(() => history.push("/pki"))
+            .then(() => {
+                const roles = JSON.parse(localStorage.getItem("session"))["roles"];
+                if (roles.includes("SIEM center admin") || roles.includes("SIEM center operator"))
+                    history.push("/siemcenter");
+                if (roles.includes("PKI admin"))
+                    history.push("/pki");
+            })
             .catch(() => {});
     }
     

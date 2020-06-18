@@ -21,7 +21,7 @@ public class LogsController {
     @Autowired
     LogService logService;
 
-    @RequestMapping(method = RequestMethod.POST, consumes = "application/octet-stream")
+    @RequestMapping(value = "/receive", method = RequestMethod.POST, consumes = "application/octet-stream")
     public ResponseEntity<Object> receiveLog(@Valid @RequestBody byte[] signedLog) throws IOException, CMSException {
         if(SignatureUtility.checkMessage(signedLog)){
             LogDTO logDTO = SignatureUtility.extractMessage(signedLog);

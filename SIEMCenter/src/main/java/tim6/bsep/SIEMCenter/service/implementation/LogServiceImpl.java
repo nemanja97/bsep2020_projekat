@@ -1,12 +1,17 @@
 package tim6.bsep.SIEMCenter.service.implementation;
 
+import org.kie.api.runtime.ClassObjectFilter;
 import org.kie.api.runtime.KieSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import tim6.bsep.SIEMCenter.model.Log;
+import tim6.bsep.SIEMCenter.model.drools.Alarm;
 import tim6.bsep.SIEMCenter.model.drools.LogWrapper;
 import tim6.bsep.SIEMCenter.repository.LogsRepository;
 import tim6.bsep.SIEMCenter.service.LogService;
+
+import java.util.Collection;
 
 @Service
 public class LogServiceImpl implements LogService {
@@ -19,6 +24,10 @@ public class LogServiceImpl implements LogService {
 
     @Autowired
     private KieSession kieSession;
+
+
+    @Autowired
+    SimpMessagingTemplate simpMessagingTemplate;
 //
 //    public LogServiceImpl(LogsRepository logsRepository) {
 //        this.logsRepository = logsRepository;
@@ -30,6 +39,9 @@ public class LogServiceImpl implements LogService {
         logsRepository.save(log);
         kieSession.insert(new LogWrapper(log));
         kieSession.fireAllRules();
+
+        Collection<Alarm> alarms = (Collection<Alarm>) kieSession.getObjects(new ClassObjectFilter(Alarm.class));
+        alarms.forEach(alarm -> simpMessagingTemplate.convertAndSend("/topic/messages", alarm));
     }
 
     @Override

@@ -85,7 +85,7 @@ public class CertificateGenerator {
                 case SIEM_CENTER:
                     certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
                     certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.nonRepudiation | KeyUsage.digitalSignature | KeyUsage.keyEncipherment | KeyUsage.keyAgreement));
-                    certGen.addExtension(Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_clientAuth));
+                    certGen.addExtension(Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_serverAuth));
                     break;
                 case SIEM_AGENT:
                     certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));

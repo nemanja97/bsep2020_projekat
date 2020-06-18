@@ -9,6 +9,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import tim6.bsep.SIEMCenter.repository.LogsRepository;
 
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class })
@@ -27,6 +29,5 @@ public class SiemCenterApplication {
 		kScanner.start(10_000);
 		return kContainer.newKieSession("BSEPTim6");
 	}
-
 
 }
