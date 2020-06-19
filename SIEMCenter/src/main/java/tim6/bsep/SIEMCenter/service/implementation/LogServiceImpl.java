@@ -1,8 +1,11 @@
 package tim6.bsep.SIEMCenter.service.implementation;
 
+import com.querydsl.core.types.Predicate;
 import org.kie.api.runtime.ClassObjectFilter;
 import org.kie.api.runtime.KieSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import tim6.bsep.SIEMCenter.model.Log;
@@ -28,6 +31,13 @@ public class LogServiceImpl implements LogService {
 
     @Autowired
     private KieSession kieSession;
+
+    @Autowired
+    SimpMessagingTemplate simpMessagingTemplate;
+
+    public Page<Log> findPredicate(Predicate predicate, Pageable pageable) {
+        return logsRepository.findAll(predicate, pageable);
+    }
 
     @Override
     public void save(Log log) {
