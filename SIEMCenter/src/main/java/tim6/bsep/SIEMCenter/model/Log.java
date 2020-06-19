@@ -12,8 +12,8 @@ import tim6.bsep.SIEMCenter.model.enums.SeverityLevel;
 
 import java.util.Date;
 
-@QueryEntity
 @Document(collection = "logs")
+@QueryEntity
 @Getter
 @Setter
 @AllArgsConstructor

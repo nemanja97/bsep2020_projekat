@@ -1,15 +1,21 @@
 package tim6.bsep.SIEMCenter.web.v1.controller;
 
+import com.querydsl.core.types.Predicate;
 import org.bouncycastle.cms.CMSException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tim6.bsep.SIEMCenter.mapper.LogMapper;
 import tim6.bsep.SIEMCenter.service.AlarmService;
+import tim6.bsep.SIEMCenter.model.Log;
 import tim6.bsep.SIEMCenter.service.LogService;
 import tim6.bsep.SIEMCenter.utility.SignatureUtility;
 import tim6.bsep.SIEMCenter.web.v1.dto.LogDTO;
+import tim6.bsep.SIEMCenter.web.v1.dto.LogListRequest;
+import tim6.bsep.SIEMCenter.web.v1.predicate.LogPredicate;
 
 import javax.validation.Valid;
 import java.io.IOException;
@@ -24,6 +30,12 @@ public class LogsController {
 
     @Autowired
     AlarmService alarmService;
+    @RequestMapping(method = RequestMethod.GET)
+    public ResponseEntity<?> findLogs(LogListRequest logListRequest, Pageable pageable){
+        Predicate predicate = new LogPredicate().makeQuery(logListRequest);
+        Page<Log> logs = logService.findPredicate(predicate, pageable);
+        return new ResponseEntity<>(logs, HttpStatus.OK);
+    }
 
     @RequestMapping(value = "/receive", method = RequestMethod.POST, consumes = "application/octet-stream")
     public ResponseEntity<Object> receiveLog(@Valid @RequestBody byte[] signedLog) throws IOException, CMSException {
