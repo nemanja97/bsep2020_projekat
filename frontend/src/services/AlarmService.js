@@ -1,12 +1,13 @@
-import axios from "axios"
-import moment from 'moment'
-import qs from "querystring"
-import jwt_decode from 'jwt-decode'
+import axios from "axios";
+import { QueryService } from "./QueryService";
 
 export const AlarmService = {
-    getNewestAlarms
-}
+  getAlarms,
+};
 
-function getNewestAlarms() {
-    return axios.get(`https://localhost:8044/api/v1/alarms`).then(r => console.log(r));
+async function getAlarms(query) {
+  const url_query = QueryService.formQuery(query);
+  return await axios.get(
+    `${process.env.REACT_APP_PKI_API_URL}/v1/alarms?=${url_query}`
+  );
 }

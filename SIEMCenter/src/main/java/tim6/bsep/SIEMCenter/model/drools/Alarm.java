@@ -1,10 +1,12 @@
 package tim6.bsep.SIEMCenter.model.drools;
 
+import com.querydsl.core.annotations.QueryEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.kie.api.definition.type.Role;
 import org.kie.api.definition.type.Timestamp;
+import org.springframework.data.mongodb.core.mapping.Document;
 import tim6.bsep.SIEMCenter.model.Log;
 import tim6.bsep.SIEMCenter.model.enums.FacilityType;
 import tim6.bsep.SIEMCenter.model.enums.LogType;
@@ -12,6 +14,8 @@ import tim6.bsep.SIEMCenter.model.enums.SeverityLevel;
 
 import java.util.*;
 
+@QueryEntity
+@Document(collection = "alarms")
 @Setter
 @Getter
 @AllArgsConstructor

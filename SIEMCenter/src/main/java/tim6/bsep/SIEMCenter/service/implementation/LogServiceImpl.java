@@ -9,6 +9,7 @@ import tim6.bsep.SIEMCenter.model.Log;
 import tim6.bsep.SIEMCenter.model.drools.Alarm;
 import tim6.bsep.SIEMCenter.model.drools.LogWrapper;
 import tim6.bsep.SIEMCenter.repository.LogsRepository;
+import tim6.bsep.SIEMCenter.service.AlarmService;
 import tim6.bsep.SIEMCenter.service.LogService;
 
 import java.util.Collection;
@@ -20,18 +21,13 @@ public class LogServiceImpl implements LogService {
     private LogsRepository logsRepository;
 
     @Autowired
+    private AlarmService alarmService;
+
+    @Autowired
     private NextSequenceService nextSequenceService;
 
     @Autowired
     private KieSession kieSession;
-
-
-    @Autowired
-    SimpMessagingTemplate simpMessagingTemplate;
-//
-//    public LogServiceImpl(LogsRepository logsRepository) {
-//        this.logsRepository = logsRepository;
-//    }
 
     @Override
     public void save(Log log) {
@@ -39,9 +35,6 @@ public class LogServiceImpl implements LogService {
         logsRepository.save(log);
         kieSession.insert(new LogWrapper(log));
         kieSession.fireAllRules();
-
-        Collection<Alarm> alarms = (Collection<Alarm>) kieSession.getObjects(new ClassObjectFilter(Alarm.class));
-        alarms.forEach(alarm -> simpMessagingTemplate.convertAndSend("/topic/messages", alarm));
     }
 
     @Override

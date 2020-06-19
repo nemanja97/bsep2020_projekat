@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import tim6.bsep.SIEMCenter.model.AlarmSequences;
 import tim6.bsep.SIEMCenter.model.LogSequences;
 
 import static org.springframework.data.mongodb.core.FindAndModifyOptions.options;
@@ -23,6 +24,16 @@ public class NextSequenceService {
                 new Update().inc("seq",1),
                 options().returnNew(true).upsert(true),
                 LogSequences.class);
+        return counter.getSeq();
+    }
+
+    public long alarmGetNextSequence(String seqName)
+    {
+        AlarmSequences counter = mongo.findAndModify(
+                query(where("_id").is(seqName)),
+                new Update().inc("seq",1),
+                options().returnNew(true).upsert(true),
+                AlarmSequences.class);
         return counter.getSeq();
     }
 }

@@ -8,7 +8,7 @@ rule "Warning"
         $logWrapper: LogWrapper(log.getSeverityLevel() == SeverityLevel.WARNING, handled == false)
     then
         System.out.println("Warning");
-        Alarm alarm = new Alarm($logWrapper.getLog());
+        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.WARNING, $logWrapper.getLog().getMessage());
         $logWrapper.setHandled(true);
         update($logWrapper);
         insert(alarm);

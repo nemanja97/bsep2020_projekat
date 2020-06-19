@@ -1,5 +1,6 @@
 package tim6.bsep.SIEMCenter.model;
 
+import com.querydsl.core.annotations.QueryEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,7 @@ import tim6.bsep.SIEMCenter.model.enums.SeverityLevel;
 
 import java.util.Date;
 
+@QueryEntity
 @Document(collection = "logs")
 @Getter
 @Setter

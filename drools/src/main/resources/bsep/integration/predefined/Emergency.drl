@@ -8,7 +8,7 @@ rule "Emergency"
         $logWrapper: LogWrapper(log.getSeverityLevel() == SeverityLevel.EMERGENCY, handled == false)
     then
         System.out.println("Emergency");
-        Alarm alarm = new Alarm($logWrapper.getLog());
+        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.EMERGENCY, $logWrapper.getLog().getMessage());
         $logWrapper.setHandled(true);
         update($logWrapper);
         insert(alarm);

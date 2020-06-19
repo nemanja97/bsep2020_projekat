@@ -10,7 +10,7 @@ rule "Error"
         $logWrapper: LogWrapper(log.getSeverityLevel() == SeverityLevel.ERROR, handled == false)
     then
         System.out.println("Error");
-        Alarm alarm = new Alarm($logWrapper.getLog());
+        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.ERROR, $logWrapper.getLog().getMessage());
         $logWrapper.setHandled(true);
         update($logWrapper);
         insert(alarm);
