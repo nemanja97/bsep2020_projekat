@@ -4,19 +4,16 @@ import com.querydsl.core.types.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 import tim6.bsep.SIEMCenter.model.drools.Alarm;
-import tim6.bsep.SIEMCenter.model.enums.FacilityType;
-import tim6.bsep.SIEMCenter.model.enums.LogType;
-import tim6.bsep.SIEMCenter.model.enums.SeverityLevel;
 import tim6.bsep.SIEMCenter.pages.AlarmPage;
 import tim6.bsep.SIEMCenter.service.AlarmService;
-
-import java.util.Date;
-import java.util.List;
+import tim6.bsep.SIEMCenter.web.v1.dto.AlarmListRequest;
 
 @RestController
 @RequestMapping(value = "api/v1/alarms")
@@ -28,18 +25,8 @@ public class AlarmsController {
 
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<AlarmPage> getAlarms(
-            @RequestParam(value = "ids", required = false) List<Long> ids,
-            @RequestParam(value = "logIds", required = false) List<Long> logIds,
-            @RequestParam(value = "fromDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date fromDate,
-            @RequestParam(value = "toDate",  required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date toDate,
-            @RequestParam(value = "facilityTypes", required = false) List<FacilityType> facilityTypes,
-            @RequestParam(value = "severityLevels", required = false) List<SeverityLevel> severityLevels,
-            @RequestParam(value = "hostnames", required = false) List<String> hostnames,
-            @RequestParam(value = "message", required = false) String message,
-            @RequestParam(value = "type", required = false) LogType logType,
-            Pageable pageable
-            ) {
-        Predicate predicate = alarmService.makeQuery(ids, logIds, fromDate, toDate, facilityTypes, severityLevels, hostnames, message, logType);
+            AlarmListRequest request, Pageable pageable) {
+        Predicate predicate = alarmService.makeQuery(request);
         Page<Alarm> alarms = alarmService.findPredicate(predicate, pageable);
         AlarmPage alarmPage = new AlarmPage(alarms.getContent(), alarms.getPageable(), alarms.getTotalElements());
 

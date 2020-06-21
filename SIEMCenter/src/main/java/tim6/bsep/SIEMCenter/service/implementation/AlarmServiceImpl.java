@@ -17,6 +17,7 @@ import tim6.bsep.SIEMCenter.model.enums.SeverityLevel;
 import tim6.bsep.SIEMCenter.repository.AlarmsRepository;
 import tim6.bsep.SIEMCenter.service.AlarmService;
 import tim6.bsep.SIEMCenter.service.RuleService;
+import tim6.bsep.SIEMCenter.web.v1.dto.AlarmListRequest;
 
 import java.util.Collection;
 import java.util.Date;
@@ -85,53 +86,53 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     @Override
-    public Predicate makeQuery(List<Long> ids, List<Long> longIds, Date fromDate, Date toDate, List<FacilityType> facilityTypes,
-                               List<SeverityLevel> severityLevels, List<String> hostnames, String message, LogType logType) {
+    public Predicate makeQuery(AlarmListRequest request) {
         QAlarm qAlarm = new QAlarm("alarm");
         BooleanBuilder builder = new BooleanBuilder();
 
+        List<Long> ids = request.getIds();
         if (ids != null && !ids.isEmpty()) {
             BooleanBuilder _builder = new BooleanBuilder();
             ids.forEach(alarmId -> _builder.or(qAlarm.id.eq(alarmId)));
             builder.and(_builder);
         }
 
-        if (longIds != null && !longIds.isEmpty()) {
-            BooleanBuilder _builder = new BooleanBuilder();
-            longIds.forEach(logId -> _builder.or(qAlarm.logIds.contains(logId)));
-            builder.and(_builder);
-        }
-
-        if (fromDate != null) {
-            builder.and(qAlarm.timestamp.after(fromDate));
-        }
-
-        if (toDate != null)
-            builder.and(qAlarm.timestamp.before(toDate));
-
+        List<FacilityType> facilityTypes = request.getFacilityTypes();
         if (facilityTypes != null && !facilityTypes.isEmpty()) {
             BooleanBuilder _builder = new BooleanBuilder();
             facilityTypes.forEach(facilityType -> _builder.or(qAlarm.facilityType.eq(facilityType)));
             builder.and(_builder);
         }
 
+        List<SeverityLevel> severityLevels = request.getSeverityLevels();
         if (severityLevels != null && !severityLevels.isEmpty()) {
             BooleanBuilder _builder = new BooleanBuilder();
             severityLevels.forEach(severityLevel -> _builder.or(qAlarm.severityLevel.eq(severityLevel)));
             builder.and(_builder);
         }
 
-        if (hostnames != null && !hostnames.isEmpty()) {
-            BooleanBuilder _builder = new BooleanBuilder();
-            hostnames.forEach(hostname -> _builder.or(qAlarm.hostnames.contains(hostname)));
-            builder.and(_builder);
-        }
+        String hostname = request.getHostnames();
+        if (hostname != null)
+            builder.and(qAlarm.hostnames.contains(hostname));
 
+        String message = request.getMessage();
         if (message != null && !message.isBlank())
             builder.and(qAlarm.message.matches(message));
 
-        if (logType != null)
-            builder.and(qAlarm.type.eq(logType));
+        List<LogType> logTypes = request.getTypes();
+        if (logTypes != null && !logTypes.isEmpty()) {
+            BooleanBuilder _builder = new BooleanBuilder();
+            logTypes.forEach(logType -> _builder.or(qAlarm.type.eq(logType)));
+            builder.and(_builder);
+        }
+
+        Date fromDate = request.getFromDate();
+        if (fromDate != null)
+            builder.and(qAlarm.timestamp.after(fromDate));
+
+        Date toDate = request.getToDate();
+        if (toDate != null)
+            builder.and(qAlarm.timestamp.before(toDate));
 
         return builder;
     }

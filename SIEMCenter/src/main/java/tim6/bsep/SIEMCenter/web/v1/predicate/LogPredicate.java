@@ -18,28 +18,40 @@ public class LogPredicate {
         BooleanBuilder builder = new BooleanBuilder();
 
         List<Long> ids = request.getIds();
-        if (ids != null && !ids.isEmpty())
-            ids.forEach(id -> builder.or(qLog.id.eq(id)));
+        if (ids != null && !ids.isEmpty()) {
+            BooleanBuilder _builder = new BooleanBuilder();
+            ids.forEach(alarmId -> _builder.or(qLog.id.eq(alarmId)));
+            builder.and(_builder);
+        }
 
         List<FacilityType> facilityTypes = request.getFacilityTypes();
-        if (facilityTypes != null && !facilityTypes.isEmpty())
-            facilityTypes.forEach(facilityType -> builder.or(qLog.facilityType.eq(facilityType)));
+        if (facilityTypes != null && !facilityTypes.isEmpty()) {
+            BooleanBuilder _builder = new BooleanBuilder();
+            facilityTypes.forEach(facilityType -> _builder.or(qLog.facilityType.eq(facilityType)));
+            builder.and(_builder);
+        }
 
         List<SeverityLevel> severityLevels = request.getSeverityLevels();
-        if (severityLevels != null && !severityLevels.isEmpty())
-            severityLevels.forEach(severityLevel -> builder.or(qLog.severityLevel.eq(severityLevel)));
+        if (severityLevels != null && !severityLevels.isEmpty()) {
+            BooleanBuilder _builder = new BooleanBuilder();
+            severityLevels.forEach(severityLevel -> _builder.or(qLog.severityLevel.eq(severityLevel)));
+            builder.and(_builder);
+        }
 
         String hostname = request.getHostnames();
         if (hostname != null)
-            builder.and(qLog.hostname.containsIgnoreCase(hostname));
+            builder.and(qLog.hostname.matches(hostname));
 
         String message = request.getMessage();
         if (message != null && !message.isBlank())
-            builder.and(qLog.message.containsIgnoreCase(message));
+            builder.and(qLog.message.matches(message));
 
         List<LogType> logTypes = request.getTypes();
-        if (logTypes != null && !logTypes.isEmpty())
-            logTypes.forEach(logType ->  builder.or(qLog.type.eq(logType)));
+        if (logTypes != null && !logTypes.isEmpty()) {
+            BooleanBuilder _builder = new BooleanBuilder();
+            logTypes.forEach(logType -> _builder.or(qLog.type.eq(logType)));
+            builder.and(_builder);
+        }
 
         Date fromDate = request.getFromDate();
         if (fromDate != null)

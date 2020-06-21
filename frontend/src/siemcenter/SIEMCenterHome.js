@@ -87,34 +87,38 @@ function SIEMCenterHome() {
     const ws2 = new WebSocket("wss://localhost:8044/connect");
     alarmStompClient = Stomp.over(ws);
     logStompClient = Stomp.over(ws2);
-    alarmStompClient.connect(
-      {},
-      (frame) => {
-        console.log("Connected: " + frame);
-        alarmStompClient.subscribe("/topic/messages", function (messageOutput) {
-          websocket_updateAlarms(messageOutput);
-        });
-      },
-      () => {
-        setTimeout(() => {
-          websocket_connectAndReconnect(socketInfo, successCallback);
-        }, 1000);
-      }
-    );
-    logStompClient.connect(
-      {},
-      (frame) => {
-        console.log("Connected: " + frame);
-        logStompClient.subscribe("/logs", function (messageOutput) {
-          websocket_updateLogs(messageOutput);
-        });
-      },
-      () => {
-        setTimeout(() => {
-          websocket_connectAndReconnect(socketInfo, successCallback);
-        }, 1000);
-      }
-    );
+    try {
+      alarmStompClient.connect(
+        {},
+        (frame) => {
+          console.log("Connected: " + frame);
+          alarmStompClient.subscribe("/topic/messages", function (messageOutput) {
+            websocket_updateAlarms(messageOutput);
+          });
+        },
+        () => {
+          setTimeout(() => {
+            websocket_connectAndReconnect(socketInfo, successCallback);
+          }, 1000);
+        }
+      );
+      logStompClient.connect(
+        {},
+        (frame) => {
+          console.log("Connected: " + frame);
+          logStompClient.subscribe("/logs", function (messageOutput) {
+            websocket_updateLogs(messageOutput);
+          });
+        },
+        () => {
+          setTimeout(() => {
+            websocket_connectAndReconnect(socketInfo, successCallback);
+          }, 1000);
+        }
+      );
+    } catch (error) {
+      websocket_connectAndReconnect();
+    }
   }
 
   const websocket_updateLogs = (message) => {
