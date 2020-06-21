@@ -3,7 +3,7 @@ import React from "react";
 const AlarmsTable = (props) => {
   return (
     <>
-      <table className="table">
+      <table className="table" style={{minHeight:"650px"}}>
         <thead>
           <tr>
             <th>Id</th>

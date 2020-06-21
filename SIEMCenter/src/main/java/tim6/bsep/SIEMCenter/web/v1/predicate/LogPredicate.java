@@ -17,17 +17,17 @@ public class LogPredicate {
         QLog qLog = new QLog("log");
         BooleanBuilder builder = new BooleanBuilder();
 
-        List<Long> ids = request.getId();
+        List<Long> ids = request.getIds();
         if (ids != null && !ids.isEmpty())
             ids.forEach(id -> builder.or(qLog.id.eq(id)));
 
-        FacilityType facilityType = request.getFacilityType();
-        if (facilityType != null)
-            builder.and(qLog.facilityType.eq(facilityType));
+        List<FacilityType> facilityTypes = request.getFacilityTypes();
+        if (facilityTypes != null && !facilityTypes.isEmpty())
+            facilityTypes.forEach(facilityType -> builder.or(qLog.facilityType.eq(facilityType)));
 
-        SeverityLevel severityLevel = request.getSeverityLevel();
-        if (severityLevel != null)
-            builder.and(qLog.severityLevel.eq(severityLevel));
+        List<SeverityLevel> severityLevels = request.getSeverityLevels();
+        if (severityLevels != null && !severityLevels.isEmpty())
+            severityLevels.forEach(severityLevel -> builder.or(qLog.severityLevel.eq(severityLevel)));
 
         String hostname = request.getHostnames();
         if (hostname != null)
@@ -37,9 +37,9 @@ public class LogPredicate {
         if (message != null && !message.isBlank())
             builder.and(qLog.message.containsIgnoreCase(message));
 
-        LogType logType = request.getLogType();
-        if (logType != null)
-            builder.and(qLog.type.eq(logType));
+        List<LogType> logTypes = request.getTypes();
+        if (logTypes != null && !logTypes.isEmpty())
+            logTypes.forEach(logType ->  builder.or(qLog.type.eq(logType)));
 
         Date fromDate = request.getFromDate();
         if (fromDate != null)

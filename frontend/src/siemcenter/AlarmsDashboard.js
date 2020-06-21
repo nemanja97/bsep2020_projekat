@@ -1,31 +1,22 @@
 import React, { useState } from "react";
 import AlarmsTable from "./AlarmsTable";
-import AlarmsSearch from "./AlarmsSearch";
+import Pagination from "react-js-pagination";
 
 const AlarmsDashboard = (props) => {
-  const [activeTab, setActiveTab] = useState({
-    tab: "liveAlarms",
-  });
-
-  const handleTabChange = (value) => (event) => {
-    event.preventDefault();
-    setActiveTab({ ...activeTab, tab: value });
-  };
-
   return (
     <>
       <div className="tabs is-toggle is-fullwidth is-normal">
         <ul>
-          <li className={activeTab === "liveAlarms" ? "is-active" : ""}>
-            <a onClick={handleTabChange("liveAlarms")}>
+          <li className={props.activeTab.alarms === "liveAlarms" ? "is-active" : ""}>
+            <a onClick={props.handleTabChange("liveAlarms", "alarm")}>
               <span className="icon is-small">
                 <i className="far fa-chart-bar" aria-hidden="true"></i>
               </span>
               <span>Live</span>
             </a>
           </li>
-          <li className={activeTab === "searchAlarms" ? "is-active" : ""}>
-            <a onClick={handleTabChange("searchAlarms")}>
+          <li className={props.activeTab.alarms === "searchAlarms" ? "is-active" : ""}>
+            <a onClick={props.handleTabChange("searchAlarms", "alarm")}>
               <span className="icon is-small">
                 <i className="fas fa-search" aria-hidden="true"></i>
               </span>
@@ -34,13 +25,22 @@ const AlarmsDashboard = (props) => {
           </li>
         </ul>
       </div>
-      {activeTab.tab === "liveAlarms" && (
+      {props.activeTab.alarms === "liveAlarms" && (
         <AlarmsTable alarms={props.liveAlarms} explain={props.explain} />
       )}
-      {activeTab.tab === "searchAlarms" && (
+      {props.activeTab.alarms === "searchAlarms" && (
         <>
-          <AlarmsSearch />
           <AlarmsTable alarms={props.searchAlarms} explain={props.explain} />
+          {props.searchAlarms.length > 0 &&(
+            <Pagination
+            activePage={props.searchPage.activePage}
+            itemsCountPerPage={props.searchPage.itemsCountPerPage}
+            totalItemsCount={props.searchPage.totalItemsCount}
+            pageRangeDisplayed={3}
+            onChange={props.handlePageChange.bind(this)}
+          />
+          )}
+          
         </>
       )}
       {props.explanation !== null && (
