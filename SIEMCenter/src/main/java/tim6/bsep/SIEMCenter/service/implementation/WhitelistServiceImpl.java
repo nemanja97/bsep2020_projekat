@@ -34,7 +34,7 @@ public class WhitelistServiceImpl implements WhitelistService {
 
     @Override
     public void create(Whitelist whitelist) {
-        whitelist.setId(nextSequenceService.blackListGetNextSequence());
+        whitelist.setId(nextSequenceService.whiteListGetNextSequence());
         whitelistRepository.save(whitelist);
     }
 

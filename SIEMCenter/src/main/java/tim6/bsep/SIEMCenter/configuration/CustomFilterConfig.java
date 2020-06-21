@@ -30,6 +30,12 @@ public class CustomFilterConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/v1/alarms/*").permitAll()
                 .antMatchers("/api/v1/logs").permitAll()
                 .antMatchers("/api/v1/alarms").permitAll()
+                .antMatchers("/api/v1/rules").permitAll()
+                .antMatchers("/api/v1/rules/*").permitAll()
+                .antMatchers("/api/v1/whitelists").permitAll()
+                .antMatchers("/api/v1/whitelists/*").permitAll()
+                .antMatchers("/api/v1/blacklists").permitAll()
+                .antMatchers("/api/v1/blacklists/*").permitAll()
                 .anyRequest().authenticated()
                 .and().cors();
 

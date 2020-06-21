@@ -16,6 +16,7 @@ import tim6.bsep.SIEMCenter.model.enums.LogType;
 import tim6.bsep.SIEMCenter.model.enums.SeverityLevel;
 import tim6.bsep.SIEMCenter.repository.AlarmsRepository;
 import tim6.bsep.SIEMCenter.service.AlarmService;
+import tim6.bsep.SIEMCenter.service.RuleService;
 
 import java.util.Collection;
 import java.util.Date;
@@ -34,7 +35,7 @@ public class AlarmServiceImpl implements AlarmService {
     SimpMessagingTemplate simpMessagingTemplate;
 
     @Autowired
-    private KieSession kieSession;
+    RuleService ruleService;
 
     @Override
     public List<Alarm> findAll() {
@@ -51,6 +52,8 @@ public class AlarmServiceImpl implements AlarmService {
 
     @Override
     public void saveNewAlarmsFromSession() {
+        KieSession kieSession = ruleService.getSession();
+
         Alarm lastSavedAlarm = findNewest();
         Collection<Alarm> sessionAlarms = (Collection<Alarm>) kieSession.getObjects(new ClassObjectFilter(Alarm.class));
         sessionAlarms.forEach(alarm -> {

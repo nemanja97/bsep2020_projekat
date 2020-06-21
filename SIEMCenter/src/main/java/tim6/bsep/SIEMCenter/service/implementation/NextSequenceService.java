@@ -58,4 +58,14 @@ public class NextSequenceService {
                 BlacklistSequences.class);
         return counter.getSeq();
     }
+
+    public long ruleGetNextSequence()
+    {
+        BlacklistSequences counter = mongo.findAndModify(
+                query(where("_id").is("ruleSequences")),
+                new Update().inc("seq",1),
+                options().returnNew(true).upsert(true),
+                BlacklistSequences.class);
+        return counter.getSeq();
+    }
 }

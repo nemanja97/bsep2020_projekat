@@ -38,7 +38,7 @@ public class TestCommunication implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        LogDTO logDTO = new LogDTO(new Date(), FacilityType.AUTH, SeverityLevel.ERROR, "localhost69", "Backup failed", LogType.SIMULATED);
+        LogDTO logDTO = new LogDTO(new Date(), FacilityType.AUTH, SeverityLevel.WARNING, "localhost69", "Encrypted {test} file", LogType.SIMULATED);
 
 //        String msg = "test";
         KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
