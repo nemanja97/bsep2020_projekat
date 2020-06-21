@@ -37,8 +37,13 @@ public class AlarmServiceImpl implements AlarmService {
     private KieSession kieSession;
 
     @Override
+    public List<Alarm> findAll() {
+        return alarmsRepository.findAll();
+    }
+
+    @Override
     public void save(Alarm alarm) {
-        alarm.setId(nextSequenceService.alarmGetNextSequence("alarmSequences"));
+        alarm.setId(nextSequenceService.alarmGetNextSequence());
         alarmsRepository.save(alarm);
 
         simpMessagingTemplate.convertAndSend("/topic/messages", alarm);
@@ -75,26 +80,42 @@ public class AlarmServiceImpl implements AlarmService {
         QAlarm qAlarm = new QAlarm("alarm");
         BooleanBuilder builder = new BooleanBuilder();
 
-        if (ids != null && !ids.isEmpty())
-            ids.forEach(alarmId -> builder.or(qAlarm.id.eq(alarmId)));
+        if (ids != null && !ids.isEmpty()) {
+            BooleanBuilder _builder = new BooleanBuilder();
+            ids.forEach(alarmId -> _builder.or(qAlarm.id.eq(alarmId)));
+            builder.and(_builder);
+        }
 
-        if (longIds != null && !longIds.isEmpty())
-            longIds.forEach(logId -> builder.or(qAlarm.logIds.contains(logId)));
+        if (longIds != null && !longIds.isEmpty()) {
+            BooleanBuilder _builder = new BooleanBuilder();
+            longIds.forEach(logId -> _builder.or(qAlarm.logIds.contains(logId)));
+            builder.and(_builder);
+        }
 
-        if (fromDate != null)
+        if (fromDate != null) {
             builder.and(qAlarm.timestamp.after(fromDate));
+        }
 
         if (toDate != null)
             builder.and(qAlarm.timestamp.before(toDate));
 
-        if (facilityTypes != null && !facilityTypes.isEmpty())
-            facilityTypes.forEach(facilityType -> builder.or(qAlarm.facilityType.eq(facilityType)));
+        if (facilityTypes != null && !facilityTypes.isEmpty()) {
+            BooleanBuilder _builder = new BooleanBuilder();
+            facilityTypes.forEach(facilityType -> _builder.or(qAlarm.facilityType.eq(facilityType)));
+            builder.and(_builder);
+        }
 
-        if (severityLevels != null && !severityLevels.isEmpty())
-            severityLevels.forEach(severityLevel -> builder.or(qAlarm.severityLevel.eq(severityLevel)));
+        if (severityLevels != null && !severityLevels.isEmpty()) {
+            BooleanBuilder _builder = new BooleanBuilder();
+            severityLevels.forEach(severityLevel -> _builder.or(qAlarm.severityLevel.eq(severityLevel)));
+            builder.and(_builder);
+        }
 
-        if (hostnames != null && !hostnames.isEmpty())
-            hostnames.forEach(hostname -> builder.or(qAlarm.hostnames.contains(hostname)));
+        if (hostnames != null && !hostnames.isEmpty()) {
+            BooleanBuilder _builder = new BooleanBuilder();
+            hostnames.forEach(hostname -> _builder.or(qAlarm.hostnames.contains(hostname)));
+            builder.and(_builder);
+        }
 
         if (message != null && !message.isBlank())
             builder.and(qAlarm.message.matches(message));

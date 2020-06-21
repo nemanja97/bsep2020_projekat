@@ -32,6 +32,20 @@ salience 2
         insert(alarm);
 end
 
+rule "Backup failed"
+salience 2
+    when
+        $logWrapper: LogWrapper(log.getSeverityLevel() == SeverityLevel.ERROR, handled == false,
+            log.getMessage().equals("Backup failed"))
+    then
+        System.out.println("Backup failed");
+        String alarmMessage = "Backup failed";
+        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.ERROR, alarmMessage);
+        $logWrapper.setHandled(true);
+        update($logWrapper);
+        insert(alarm);
+end
+
 rule "More than 3 invalid credentials alarm on same machine in last 60 seconds"
 salience 3
     when

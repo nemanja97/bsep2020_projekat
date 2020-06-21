@@ -13,9 +13,12 @@ import tim6.bsep.SIEMCenter.model.drools.Alarm;
 import tim6.bsep.SIEMCenter.model.drools.LogWrapper;
 import tim6.bsep.SIEMCenter.repository.LogsRepository;
 import tim6.bsep.SIEMCenter.service.AlarmService;
+import tim6.bsep.SIEMCenter.service.BlacklistService;
 import tim6.bsep.SIEMCenter.service.LogService;
+import tim6.bsep.SIEMCenter.service.WhitelistService;
 
 import java.util.Collection;
+import java.util.List;
 
 @Service
 public class LogServiceImpl implements LogService {
@@ -30,6 +33,12 @@ public class LogServiceImpl implements LogService {
     private NextSequenceService nextSequenceService;
 
     @Autowired
+    BlacklistService blacklistService;
+
+    @Autowired
+    WhitelistService whitelistService;
+
+    @Autowired
     private KieSession kieSession;
 
     @Autowired
@@ -41,10 +50,24 @@ public class LogServiceImpl implements LogService {
 
     @Override
     public void save(Log log) {
-        log.setId(nextSequenceService.getNextSequence("logSequences"));
+        insertPreviousObjectsAndGlobals();
+
+        log.setId(nextSequenceService.logGetNextSequence());
         logsRepository.save(log);
         kieSession.insert(new LogWrapper(log));
         kieSession.fireAllRules();
+    }
+
+    private void insertPreviousObjectsAndGlobals() {
+        if (kieSession.getFactCount() > 0) {
+            List<Alarm> alarms = alarmService.findAll();
+            List<Log> logs = logsRepository.findAll();
+
+            alarms.forEach(previousAlarm -> kieSession.insert(previousAlarm));
+            logs.forEach(previousLog -> kieSession.insert(new LogWrapper(previousLog, true)));
+        }
+        kieSession.setGlobal("whitelistService", whitelistService);
+        kieSession.setGlobal("blacklistService", blacklistService);
     }
 
     @Override

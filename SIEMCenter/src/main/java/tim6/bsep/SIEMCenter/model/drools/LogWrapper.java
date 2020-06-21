@@ -18,4 +18,9 @@ public class LogWrapper {
         this.log = log;
         this.handled = false;
     }
+
+    public LogWrapper(Log log, boolean handled){
+        this.log = log;
+        this.handled = handled;
+    }
 }

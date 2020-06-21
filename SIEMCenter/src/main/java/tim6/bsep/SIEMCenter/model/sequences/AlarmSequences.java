@@ -1,26 +1,21 @@
-package tim6.bsep.SIEMCenter.model;
+package tim6.bsep.SIEMCenter.model.sequences;
 
-import com.querydsl.core.annotations.QueryEntity;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@QueryEntity
 @Document(collection = "alarmSequences")
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class AlarmSequences {
 
     @Id
     private String id;
     private long seq;
 
-    public AlarmSequences(String id, long seq) {
-        this.id = id;
-        this.seq = seq;
-    }
-
-    public AlarmSequences() {
-    }
 }

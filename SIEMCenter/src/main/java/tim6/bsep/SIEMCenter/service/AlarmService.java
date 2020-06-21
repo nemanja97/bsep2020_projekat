@@ -13,6 +13,8 @@ import java.util.List;
 
 public interface AlarmService {
 
+    List<Alarm> findAll();
+
     void save(Alarm alarm);
 
     void saveNewAlarmsFromSession();

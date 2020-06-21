@@ -64,7 +64,7 @@ function SIEMCenterHome() {
       },
       () => {
         setTimeout(() => {
-          this.websocket_connectAndReconnect(socketInfo, successCallback);
+          websocket_connectAndReconnect(socketInfo, successCallback);
         }, 1000);
       }
     );

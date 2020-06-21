@@ -1,0 +1,34 @@
+package bsep.integration.predefined;
+import tim6.bsep.SIEMCenter.model.drools.LogWrapper;
+import tim6.bsep.SIEMCenter.model.drools.Alarm
+import tim6.bsep.SIEMCenter.model.enums.SeverityLevel
+import tim6.bsep.SIEMCenter.service.implementation.BlacklistServiceImpl;
+import tim6.bsep.SIEMCenter.service.implementation.WhitelistServiceImpl;
+import tim6.bsep.SIEMCenter.model.Whitelist;
+import tim6.bsep.SIEMCenter.model.Blacklist;
+
+global tim6.bsep.SIEMCenter.service.implementation.BlacklistServiceImpl blacklistService
+global tim6.bsep.SIEMCenter.service.WhitelistService whitelistService
+
+
+rule "Attempted to execute not allowed application"
+    when
+        $logWrapper: LogWrapper(
+            log.getSeverityLevel() == SeverityLevel.INFORMATIONAL, handled == false,
+            log.getMessage() matches "Attempted to execute \\{.*\\}",
+            $applicationName: log.getMessage().substring(log.getMessage().indexOf("{") + 1, log.getMessage().lastIndexOf("}"))
+        )
+        eval(whitelistService.getByName("APPLICATIONS") != null &&
+             !whitelistService.getByName("APPLICATIONS").getContent().contains($applicationName)
+             )
+    then
+        String alarmMessage = String.format("Attempted to execute {%s}", $applicationName);
+        System.out.println(alarmMessage);
+
+        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.WARNING, alarmMessage);
+        $logWrapper.setHandled(true);
+        update($logWrapper);
+        insert(alarm);
+end
+
+
