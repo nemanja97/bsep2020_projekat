@@ -48,10 +48,17 @@ public class AlarmServiceImpl implements AlarmService {
     public void saveNewAlarmsFromSession() {
         Alarm lastSavedAlarm = findNewest();
         Collection<Alarm> sessionAlarms = (Collection<Alarm>) kieSession.getObjects(new ClassObjectFilter(Alarm.class));
-        sessionAlarms.forEach(alarm -> {
-            if (alarm.getTimestamp().after(lastSavedAlarm.getTimestamp()))
-                save(alarm);
-        });
+        if (sessionAlarms != null && !sessionAlarms.isEmpty()) {
+            if(lastSavedAlarm != null){
+                sessionAlarms.forEach(alarm -> {
+                    if (alarm.getTimestamp().after(lastSavedAlarm.getTimestamp()))
+                        save(alarm);
+                });
+            }else{
+                sessionAlarms.forEach(this::save);
+            }
+
+        }
     }
 
     @Override

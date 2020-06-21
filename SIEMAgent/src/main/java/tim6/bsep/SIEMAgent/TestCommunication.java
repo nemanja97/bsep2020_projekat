@@ -38,7 +38,7 @@ public class TestCommunication implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        LogDTO logDTO = new LogDTO(new Date(), FacilityType.AUTH, SeverityLevel.EMERGENCY, "localhost69", "Invalid credentials username: Djole|", LogType.SIMULATED);
+        LogDTO logDTO = new LogDTO(new Date(), FacilityType.AUTH, SeverityLevel.ERROR, "localhost69", "Invalid credentials username: Djole|", LogType.SIMULATED);
 
 //        String msg = "test";
         KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -58,7 +58,7 @@ public class TestCommunication implements ApplicationRunner {
         RestTemplate restTemplate = new RestTemplate(requestFactory);
         byte[] signedData = SignatureUtility.signMessage(toJson(logDTO), keyStoreName, password, serverCertificateAlias);
         System.out.println(String.format("SIGNED DATA LEN %s", signedData.length));
-        ResponseEntity<String> response = restTemplate.postForEntity("https://localhost:8044/api/v1/logs/receive", signedData, String.class);
+        ResponseEntity<Object> response = restTemplate.postForEntity("https://localhost:8044/api/v1/logs/receive", signedData, Object.class);
     }
 
     private String toJson(LogDTO logDTO) {

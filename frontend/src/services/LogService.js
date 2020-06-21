@@ -1,13 +1,14 @@
 import axios from "axios";
 import { QueryService } from "./QueryService";
 
-export const AlarmService = {
-  getAlarms,
+export const LogService = {
+  getLogs,
 };
 
-async function getAlarms(query) {
+async function getLogs(query) {
   const url_query = QueryService.formQuery(query);
+  console.log(url_query)
   return await axios.get(
-    `${process.env.REACT_APP_PKI_API_URL}/v1/alarms?${url_query}`
+    `${process.env.REACT_APP_PKI_API_URL}/v1/logs?${url_query}`
   );
 }

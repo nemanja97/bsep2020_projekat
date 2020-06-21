@@ -45,6 +45,7 @@ public class LogServiceImpl implements LogService {
         logsRepository.save(log);
         kieSession.insert(new LogWrapper(log));
         kieSession.fireAllRules();
+        simpMessagingTemplate.convertAndSend("/logs", log);
     }
 
     @Override

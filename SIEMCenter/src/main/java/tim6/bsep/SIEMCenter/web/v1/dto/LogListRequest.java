@@ -14,17 +14,17 @@ import java.util.List;
 @Setter
 public class LogListRequest {
 
-    private List<Long> id;
+    private List<Long> ids;
 
-    private FacilityType facilityType;
+    private List<FacilityType> facilityTypes;
 
-    private SeverityLevel severityLevel;
+    private List<SeverityLevel> severityLevels;
 
     private String hostnames;
 
     private String message;
 
-    private LogType logType;
+    private List<LogType> types;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private Date fromDate;
