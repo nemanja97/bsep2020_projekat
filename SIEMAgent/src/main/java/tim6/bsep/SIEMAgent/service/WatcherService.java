@@ -99,8 +99,8 @@ public class WatcherService {
                         recordsToAdd.add(curRecord);
                     }
                     if(recordsToAdd.size() > 0){
-                        put(logName, (long) recordsToAdd.get(0).getRecordNumber());
                         handleRecords(recordsToAdd, item);
+                        put(logName, (long) recordsToAdd.get(0).getRecordNumber());
                     }
                     if(item.getBatch()){
                         Thread.sleep(item.getBatchTime());
@@ -141,6 +141,7 @@ public class WatcherService {
     private void performClientRequest(ArrayList<Log> logs) {
         try{
             String msg = mapper.writeValueAsString(logs);
+            System.out.println(msg);
             byte[] signedData = SignatureUtility.signMessage(msg, keyStoreName, password, serverCertificateAlias);
             restTemplate.postForEntity("https://localhost:8044/api/v1/test", signedData, String.class);
         } catch (IOException | CertificateEncodingException | CMSException | OperatorCreationException e){

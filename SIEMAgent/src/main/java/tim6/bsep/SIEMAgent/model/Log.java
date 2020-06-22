@@ -25,28 +25,45 @@ public class Log {
         TimeZone tz = TimeZone.getTimeZone("UTC");
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
         df.setTimeZone(tz);
-        try {
-            this.timestamp = df.parse(tokens[0]);
-        }catch (ParseException e){
-            this.timestamp = new Date();
-        }
-        this.facilityType = FacilityType.valueOf(tokens[1]);
-        this.severityLevel = SeverityLevel.valueOf(tokens[2]);
-        this.hostname = tokens[3];
-        if(tokens.length > 5){
-            StringBuilder sb = new StringBuilder(tokens[4]);
-            for (int i = 5; i < tokens.length; i++) {
-                sb.append(" ").append(tokens[i]);
+        try{
+            String[] facilitySeverity = tokens[0].split("\\.");
+
+            this.facilityType = FacilityType.valueOf(facilitySeverity[0]);
+            this.severityLevel = SeverityLevel.valueOf(facilitySeverity[1]);
+
+            try {
+                this.timestamp = df.parse(tokens[1]);
+            }catch (ParseException e){
+                this.timestamp = new Date();
             }
-            this.message = sb.toString();
-        }else {
-            this.message = tokens[4];
+            this.hostname = tokens[2];
+            if(tokens.length > 5){
+                StringBuilder sb = new StringBuilder(tokens[4]);
+                for (int i = 5; i < tokens.length; i++) {
+                    sb.append(" ").append(tokens[i]);
+                }
+                this.message = sb.toString();
+            }else {
+                this.message = tokens[4];
+            }
+            if(simulated){
+                this.type = LogType.SIMULATED;
+            }else {
+                this.type = LogType.SYSTEM;
+            }
+        } catch (Exception e){
+            this.facilityType = FacilityType.SECURITY;
+            this.severityLevel = SeverityLevel.WARNING;
+            this.timestamp = new Date();
+            this.hostname = System.getProperty("user.name");
+            this.message = "ERROR PARSING LOG: " +  line;
+            if(simulated){
+                this.type = LogType.SIMULATED;
+            }else {
+                this.type = LogType.SYSTEM;
+            }
         }
-        if(simulated){
-            this.type = LogType.SIMULATED;
-        }else {
-            this.type = LogType.SYSTEM;
-        }
+
     }
 
     public Log(Advapi32Util.EventLogRecord record){
