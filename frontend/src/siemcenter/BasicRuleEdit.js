@@ -22,8 +22,8 @@ const BasicRuleEdit = (props) => {
                 readonly
                 rows="20"
                 onChange={props.inputChange("content")}
+                value={props.rule.content}
               >
-                {props.rule.content}
               </textarea>
             </div>
           </div>
