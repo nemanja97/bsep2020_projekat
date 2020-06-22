@@ -1,5 +1,6 @@
 package tim6.bsep.SIEMCenter.service.implementation;
 
+import com.querydsl.core.types.Predicate;
 import org.apache.tools.ant.filters.StringInputStream;
 import org.drools.core.impl.KnowledgeBaseFactory;
 import org.kie.api.KieBase;
@@ -13,8 +14,11 @@ import org.kie.api.runtime.KieSession;
 import org.kie.internal.io.ResourceFactory;
 import org.kie.internal.utils.KieHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import tim6.bsep.SIEMCenter.exceptions.RuleNotCompilingException;
+import tim6.bsep.SIEMCenter.model.Log;
 import tim6.bsep.SIEMCenter.model.Rule;
 import tim6.bsep.SIEMCenter.repository.RuleRepository;
 import tim6.bsep.SIEMCenter.service.RuleService;
@@ -43,8 +47,13 @@ public class RuleServiceImpl implements RuleService {
     }
 
     @Override
+    public Page<Rule> findPredicate(Predicate predicate, Pageable pageable) {
+        return ruleRepository.findAll(predicate, pageable);
+    }
+
+    @Override
     public void create(Rule rule) throws RuleNotCompilingException {
-        checkIfRuleCompiles(rule);
+        validate(rule);
         rule.setId(nextSequenceService.ruleGetNextSequence());
         ruleRepository.save(rule);
         refreshSession();
@@ -53,7 +62,7 @@ public class RuleServiceImpl implements RuleService {
     @Override
     public boolean update(Long id, Rule rule) throws RuleNotCompilingException {
         Rule oldRule = findById(id);
-        checkIfRuleCompiles(rule);
+        validate(rule);
         if (oldRule != null) {
             oldRule.setConsumes(rule.getConsumes());
             oldRule.setProduces(rule.getProduces());
@@ -84,18 +93,23 @@ public class RuleServiceImpl implements RuleService {
         return kieSession;
     }
 
-    private void checkIfRuleCompiles(Rule rule) throws RuleNotCompilingException {
+    @Override
+    public void validate(Rule rule) throws RuleNotCompilingException {
         KieHelper kieHelper = new KieHelper();
         kieHelper.addResource(ResourceFactory.newInputStreamResource(new StringInputStream(rule.getContent())), ResourceType.DRL);
 
         KieBaseConfiguration kieBaseConfiguration = KnowledgeBaseFactory.newKnowledgeBaseConfiguration();
         kieBaseConfiguration.setOption(EventProcessingOption.STREAM);
         kieBaseConfiguration.setOption(EqualityBehaviorOption.EQUALITY);
-        kieHelper.build(kieBaseConfiguration);
 
-        Results results = kieHelper.verify();
-        if (results.hasMessages(Message.Level.ERROR)) {
-            throw new RuleNotCompilingException(results.getMessages(Message.Level.ERROR));
+        try {
+            kieHelper.build(kieBaseConfiguration);
+        } catch (Exception ignored) {
+        } finally {
+            Results results = kieHelper.verify();
+            if (results.hasMessages(Message.Level.ERROR)) {
+                throw new RuleNotCompilingException(results.getMessages(Message.Level.ERROR));
+            }
         }
     }
 

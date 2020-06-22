@@ -1,6 +1,8 @@
 package tim6.bsep.SIEMCenter.service.implementation;
 
 import com.querydsl.core.types.Predicate;
+import org.kie.api.definition.KiePackage;
+import org.kie.api.definition.rule.Global;
 import org.kie.api.runtime.ClassObjectFilter;
 import org.kie.api.runtime.KieSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,7 @@ import tim6.bsep.SIEMCenter.service.*;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class LogServiceImpl implements LogService {
@@ -66,8 +69,20 @@ public class LogServiceImpl implements LogService {
             alarms.forEach(kieSession::insert);
             logs.forEach(previousLog -> kieSession.insert(new LogWrapper(previousLog, true)));
         }
-        kieSession.setGlobal("whitelistService", whitelistService);
-        kieSession.setGlobal("blacklistService", blacklistService);
+        insertGlobalsIfNeeded(kieSession);
+    }
+
+    private void insertGlobalsIfNeeded(KieSession kieSession) {
+        final Collection<KiePackage> kiePackages = kieSession.getKieBase().getKiePackages();
+        for (KiePackage kiePackage : kiePackages)
+        {
+            final Collection<Global> globalVariables = kiePackage.getGlobalVariables();
+            List<String> globalNames = globalVariables.stream().map(Global::getName).collect(Collectors.toList());
+            if (globalNames.contains("whitelistService"))
+                kieSession.setGlobal("whitelistService", whitelistService);
+            if (globalNames.contains("blacklistService"))
+                kieSession.setGlobal("blacklistService", blacklistService);
+        }
     }
 
     @Override

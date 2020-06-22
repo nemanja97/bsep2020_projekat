@@ -1,4 +1,5 @@
 import React from "react";
+import Pagination from "react-js-pagination";
 
 const RulesTable = (props) => {
   return (
@@ -10,8 +11,7 @@ const RulesTable = (props) => {
             <th>Name</th>
             <th>Produces alarm of type</th>
             <th>Checks logs of type</th>
-            <th>Read</th>
-            <th>Edit</th>
+            <th>Review</th>
             <th>Delete</th>
           </tr>
         </thead>
@@ -21,8 +21,7 @@ const RulesTable = (props) => {
             <th>Name</th>
             <th>Produces alarm of type</th>
             <th>Checks logs of type</th>
-            <th>Read</th>
-            <th>Edit</th>
+            <th>Review</th>
             <th>Delete</th>
           </tr>
         </tfoot>
@@ -36,32 +35,19 @@ const RulesTable = (props) => {
                   <td>{rule.produces}</td>
                   <td>{rule.consumes}</td>
                   <td>
-                    <button
-                      className="button"
-                      onClick={() => props.read(rule)}
-                    >
+                    <button className="button" onClick={() => props.edit(rule.id)}>
                       <span className="icon is-small">
-                        <i className="fas fa-question"></i>
+                        <i class="fas fa-edit"></i>
                       </span>
                     </button>
                   </td>
                   <td>
                     <button
                       className="button"
-                      onClick={() => props.edit(rule)}
+                      onClick={() => props.delete(rule.id)}
                     >
                       <span className="icon is-small">
-                        <i className="fas fa-question"></i>
-                      </span>
-                    </button>
-                  </td>
-                  <td>
-                    <button
-                      className="button"
-                      onClick={() => props.delete(rule)}
-                    >
-                      <span className="icon is-small">
-                        <i className="fas fa-question"></i>
+                        <i class="fas fa-backspace"></i>
                       </span>
                     </button>
                   </td>
@@ -70,6 +56,15 @@ const RulesTable = (props) => {
             })}
         </tbody>
       </table>
+      {props.rules.length > 0 && (
+        <Pagination
+          activePage={props.searchPage.activePage}
+          itemsCountPerPage={props.searchPage.itemsCountPerPage}
+          totalItemsCount={props.searchPage.totalItemsCount}
+          pageRangeDisplayed={3}
+          onChange={props.handlePageChange.bind(this)}
+        />
+      )}
     </>
   );
 };
