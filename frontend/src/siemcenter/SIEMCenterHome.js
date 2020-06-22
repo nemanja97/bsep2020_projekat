@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
-import Stomp from "stompjs";
 import { AlarmService } from "../services/AlarmService";
 import { LogService } from "../services/LogService";
 import AlarmsDashboard from "./AlarmsDashboard";
 import SIEMCenterNavbar from "./SIEMCenterNavbar";
 import LogsDashboard from "./LogsDashboard";
 import Search from "./Search";
+import { Client } from "@stomp/stompjs";
 
 var alarmStompClient = null;
-var logStompClient = null
+var logStompClient = null;
 
 function SIEMCenterHome() {
   const [liveAlarms, setLiveAlarms] = useState([]);
@@ -25,17 +25,17 @@ function SIEMCenterHome() {
     activePage: 0,
     itemsCountPerPage: 10,
     totalItemsCount: 0,
-  })
+  });
 
   const [alarmSearchPage, setAlarmSearchPage] = useState({
     activePage: 0,
     itemsCountPerPage: 10,
     totalItemsCount: 0,
-  })
+  });
 
   const [activeTab, setActiveTab] = useState({
     logs: "liveLogs",
-    alarms: "liveAlarms"
+    alarms: "liveAlarms",
   });
 
   const [query, setQuery] = useState({
@@ -75,69 +75,80 @@ function SIEMCenterHome() {
 
     // Websocket cleanup
     window.addEventListener("unload", () => websocket_handleStop());
-    return () => { websocket_handleStop(); }
+    return () => {
+      websocket_handleStop();
+    };
   }, []);
 
   // ****************************************************************************************************
   // Websocket handling
   // ****************************************************************************************************
 
-  const websocket_connectAndReconnect = (socketInfo, successCallback) => {
-    const ws = new WebSocket("wss://localhost:8044/connect");
-    const ws2 = new WebSocket("wss://localhost:8044/connect");
-    alarmStompClient = Stomp.over(ws);
-    logStompClient = Stomp.over(ws2);
-    try {
-      alarmStompClient.connect(
-        {},
-        (frame) => {
-          console.log("Connected: " + frame);
-          alarmStompClient.subscribe("/topic/messages", function (messageOutput) {
-            websocket_updateAlarms(messageOutput);
-          });
-        },
-        () => {
-          setTimeout(() => {
-            websocket_connectAndReconnect(socketInfo, successCallback);
-          }, 1000);
-        }
+  const websocket_connectAndReconnect = () => {
+    const alarmStompClient = new Client({
+      brokerURL: "wss://localhost:8044/connect",
+      debug: function (str) {
+        console.log(str);
+      },
+      reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+    });
+    const logStompClient = new Client({
+      brokerURL: "wss://localhost:8044/connect",
+      debug: function (str) {
+        console.log(str);
+      },
+      reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+    });
+
+    alarmStompClient.onConnect = function (frame) {
+      console.log("Alarm STOMP connected: " + frame);
+      alarmStompClient.subscribe("/alarms", function (messageOutput) {
+        websocket_updateAlarms(messageOutput);
+      });
+    };
+    alarmStompClient.onStompError = function (frame) {
+      console.log(
+        "Alarm STOMP Broker reported error: " + frame.headers["message"]
       );
-      logStompClient.connect(
-        {},
-        (frame) => {
-          console.log("Connected: " + frame);
-          logStompClient.subscribe("/logs", function (messageOutput) {
-            websocket_updateLogs(messageOutput);
-          });
-        },
-        () => {
-          setTimeout(() => {
-            websocket_connectAndReconnect(socketInfo, successCallback);
-          }, 1000);
-        }
+      console.log("Additional details: " + frame.body);
+    };
+
+    logStompClient.onConnect = function (frame) {
+      console.log("Log STOMP connected: " + frame);
+      logStompClient.subscribe("/logs", function (messageOutput) {
+        websocket_updateLogs(messageOutput);
+      });
+    };
+    logStompClient.onStompError = function (frame) {
+      console.log(
+        "Log STOMP Broker reported error: " + frame.headers["message"]
       );
-    } catch (error) {
-      websocket_connectAndReconnect();
-    }
-  }
+      console.log("Additional details: " + frame.body);
+    };
+
+    alarmStompClient.activate();
+    logStompClient.activate();
+  };
 
   const websocket_updateLogs = (message) => {
     const newLog = JSON.parse(message.body);
-    if(newLog.body === null){
+    if (newLog.body === null) {
       return;
     }
     setLiveLogs((prevState) => {
       return [newLog].concat(prevState).slice(0, 10);
-    })
-  }
+    });
+  };
 
   const websocket_updateAlarms = (message) => {
-    const latestAlarm = JSON.parse(message.body);
-    if (latestAlarm.body === null) {
+    const newAlarm = JSON.parse(message.body);
+    if (newAlarm.body === null) {
       return;
     }
-    const newAlarm = JSON.parse(message.body);
-    console.log("Added alarm");
     setLiveAlarms((prevState) => {
       return [newAlarm].concat(prevState).slice(0, 10);
     });
@@ -153,33 +164,27 @@ function SIEMCenterHome() {
   };
 
   const websocket_handleStop = (e) => {
-    if (e === undefined || alarmStompClient === null || alarmStompClient === null) {
+    console.log("Closing websocket connections");
+    if (
+      e === undefined ||
+      alarmStompClient === null ||
+      alarmStompClient === null
+    ) {
       return;
     }
     e.preventDefault();
-    alarmStompClient.disconnect();
-    logStompClient.disconnect();
+    alarmStompClient.deactivate();
+    logStompClient.deactivate();
   };
 
   // ****************************************************************************************************
   // Alarm handling
   // ****************************************************************************************************
 
-  const handleAlarmSearch = (event) => {
-    event.preventDefault();
-    console.log(query);
-  };
-
   const handleAlarmExplanation = (alarm) => {
     // TODO add logs explaining the alarm
     setAlarmExplanation(alarm);
   };
-
-  // ****************************************************************************************************
-  // Log handling
-  // ****************************************************************************************************
-
-
 
   // ****************************************************************************************************
   // Page info handling
@@ -192,61 +197,53 @@ function SIEMCenterHome() {
         ...logSearchPage,
         activePage: frontendPageNumber,
         itemsCountPerPage: response.numberOfElements,
-        totalItemsCount: response.totalElements
-      })
+        totalItemsCount: response.totalElements,
+      });
     } else if (type === "alarms") {
       setAlarmSearchPage({
         ...alarmSearchPage,
         activePage: frontendPageNumber,
         itemsCountPerPage: response.numberOfElements,
-        totalItemsCount: response.totalElements
-      })
+        totalItemsCount: response.totalElements,
+      });
     }
-    setQuery({ ...query, page: undefined })
-  }
+    setQuery({ ...query, page: undefined });
+  };
 
   const handlePageChange = (selectedPage) => {
     const backendPageNumber = selectedPage - 1;
-    setQuery({ ...query, page: backendPageNumber })
-  }
+    setQuery({ ...query, page: backendPageNumber });
+  };
 
   useEffect(() => {
     const executeSearchQuery = () => {
       if (search === "LOGS") {
-        LogService.getLogs(query).then(
-          res => {
-            setSearchLogs(res.data.content);
-            updateSearchPageInfo(res.data, "logs");
-            handleTabChange("searchLogs", "log");
-          }
-        )
+        LogService.getLogs(query).then((res) => {
+          setSearchLogs(res.data.content);
+          updateSearchPageInfo(res.data, "logs");
+          handleTabChange("searchLogs", "log");
+        });
       } else if (search === "ALARMS") {
-        AlarmService.getAlarms(query).then(
-          res => {
-            setSearchAlarms(res.data.content);
-            updateSearchPageInfo(res.data, "alarms");
-            handleTabChange("searchAlarms", "alarm");
-          }
-        )
+        AlarmService.getAlarms(query).then((res) => {
+          setSearchAlarms(res.data.content);
+          updateSearchPageInfo(res.data, "alarms");
+          handleTabChange("searchAlarms", "alarm");
+        });
       } else if (search === "BOTH") {
-        LogService.getLogs(query).then(
-          res => {
-            setSearchLogs(res.data.content);
-            updateSearchPageInfo(res.data, "logs");
-            handleTabChange("", "both");
-          }
-        )
-        AlarmService.getAlarms(query).then(
-          res => {
-            setSearchAlarms(res.data.content);
-            updateSearchPageInfo(res.data, "alarms");
-            handleTabChange("42", "both");
-          }
-        )
+        LogService.getLogs(query).then((res) => {
+          setSearchLogs(res.data.content);
+          updateSearchPageInfo(res.data, "logs");
+          handleTabChange("", "both");
+        });
+        AlarmService.getAlarms(query).then((res) => {
+          setSearchAlarms(res.data.content);
+          updateSearchPageInfo(res.data, "alarms");
+          handleTabChange("42", "both");
+        });
       }
-    }
+    };
     if (query.page !== undefined) {
-      console.log(query)
+      console.log(query);
       executeSearchQuery();
     }
   }, [query.page]);
@@ -258,19 +255,19 @@ function SIEMCenterHome() {
   const handleSearchFormInputChange = (name) => (event) => {
     const val = event.target.value;
     setQuery({ ...query, [name]: val });
-  }
+  };
 
   const handleSearchFormWidgetChange = (name) => (val) => {
     setQuery({ ...query, [name]: val });
-  }
+  };
 
   const handleSearchChange = (value) => {
     setSearch(value);
-  }
+  };
 
   const handleSearchSubmit = () => {
-    setQuery({ ...query, page: 0 })
-  }
+    setQuery({ ...query, page: 0 });
+  };
 
   const handleTabChangeEvent = (value, view) => (event) => {
     event.preventDefault();
@@ -282,18 +279,16 @@ function SIEMCenterHome() {
       setActiveTab({ ...activeTab, logs: value });
     } else if (view === "alarm") {
       setActiveTab({ ...activeTab, alarms: value });
-    }else if (view === "both") {
-      setActiveTab({logs: "searchLogs", alarms: "searchAlarms"})
+    } else if (view === "both") {
+      setActiveTab({ logs: "searchLogs", alarms: "searchAlarms" });
     }
-  }
+  };
 
   const handleIdsChange = (event) => {
     const val = event.target.value;
-    const newIds = val.split(" ").filter(x => x !== "");
-    setQuery({...query, ids: newIds});
-  }
- 
-
+    const newIds = val.split(" ").filter((x) => x !== "");
+    setQuery({ ...query, ids: newIds });
+  };
 
   return (
     <>
@@ -314,7 +309,10 @@ function SIEMCenterHome() {
         </article>
       )}
       <section>
-        <div className="columns" style={{ marginTop: "25px", marginLeft: "25px" }}>
+        <div
+          className="columns"
+          style={{ marginTop: "25px", marginLeft: "25px" }}
+        >
           <Search
             ids={query.ids}
             handleSearchFormInputChange={handleSearchFormInputChange}
@@ -348,7 +346,6 @@ function SIEMCenterHome() {
               handlePageChange={handlePageChange}
               handleTabChange={handleTabChangeEvent}
             />
-
           </div>
         </div>
       </section>
