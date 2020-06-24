@@ -28,7 +28,7 @@ function WhitelistsDashboard() {
 
   const handleDelete = async (id) => {
     await WhitelistService.deleteWhitelist(id).then(() => {
-      setWhitelists((prevState) => prevState.filter((el) => el.id != id));
+      setWhitelists((prevState) => prevState.filter((el) => el.id !== id));
     });
   };
 

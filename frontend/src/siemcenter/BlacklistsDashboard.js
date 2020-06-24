@@ -28,7 +28,7 @@ function BlacklistsDashboard() {
 
   const handleDelete = async (id) => {
     await BlacklistService.deleteBlacklist(id).then(() => {
-      setBlacklists((prevState) => prevState.filter((el) => el.id != id));
+      setBlacklists((prevState) => prevState.filter((el) => el.id !== id));
     });
   };
 

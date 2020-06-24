@@ -1,8 +1,10 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
+import { AuthenticationService } from "../services/AuthenticationService";
 
 export default function SIEMCenterNavbar() {
   const roles = JSON.parse(localStorage.getItem("session"))["roles"];
+  const history = useHistory();
 
   return (
     <nav className="navbar" role="navigation" aria-label="main navigation">
@@ -37,7 +39,13 @@ export default function SIEMCenterNavbar() {
         <div className="navbar-end">
           <div className="navbar-item">
             <div className="buttons">
-              <Link className="button is-primary" to="/logout">
+              <Link
+                className="button is-primary"
+                onClick={() => {
+                  AuthenticationService.purgeToken();
+                  history.push("/login");
+                }}
+              >
                 Log out
               </Link>
             </div>

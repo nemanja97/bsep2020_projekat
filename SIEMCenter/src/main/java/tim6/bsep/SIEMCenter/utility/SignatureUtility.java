@@ -123,7 +123,6 @@ public class SignatureUtility {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        System.out.println("uso");
         return null;
     }
 }
