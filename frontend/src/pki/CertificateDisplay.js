@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import { CertificateService } from '../services/CertificateService';
+import FileSaver, { saveAs } from 'file-saver';
 
 function CertificateDisplay() {
     const [certificate, setCertificate] = useState(
@@ -26,6 +27,15 @@ function CertificateDisplay() {
     const handleChange = (change) => (event) => {
         return;
     };
+    
+    const handleDownload = (e) => {
+        e.preventDefault()
+        CertificateService.download(params.id)
+            .then(response => {
+                FileSaver.saveAs(new Blob([response.data], {type: 'application/zip'}), 'data.zip')
+            })
+            
+    }
 
     const [reason, setReason] = useState('unspecified')
 
@@ -34,7 +44,7 @@ function CertificateDisplay() {
         CertificateService.revoke(certificate.id, reason)
             .then(() => history.push('/pki'));
     }
-
+    
     return (
         <div className="container-fluid">
             <div className="row mt-3">
@@ -112,6 +122,7 @@ function CertificateDisplay() {
                             </select>
                         </div>
                         <button type="submit" className="btn btn-danger">Revoke certificate</button>
+                        <button className="btn btn-primary" style={{marginLeft: 16}} onClick={(e) => handleDownload(e)}>Download</button>
                     </form>
                 </div>
             </div>

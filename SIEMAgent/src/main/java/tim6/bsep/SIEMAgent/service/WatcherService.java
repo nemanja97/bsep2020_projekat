@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Objects;
 
 import static tim6.bsep.SIEMAgent.utility.EventLogRecordUtility.getDescription;
-
+import static tim6.bsep.SIEMAgent.utility.ParsingUtility.parse;
 
 @Service
 public class WatcherService {
@@ -118,7 +118,7 @@ public class WatcherService {
         ArrayList<Log> logs = new ArrayList<>();
         for (String line: lines) {
             if(checkRegex(line, item)){
-                logs.add(new Log(line, item.getSimulated()));
+                logs.add(parse(line, item));
             }
         }
         if(logs.size() > 0){
@@ -130,7 +130,7 @@ public class WatcherService {
         ArrayList<Log> logs = new ArrayList<>();
         for (Advapi32Util.EventLogRecord record: records) {
             if(checkRegex(getDescription(record), item)){
-                logs.add(new Log(record));
+                logs.add(parse(record));
             }
         }
         if(logs.size() > 0){

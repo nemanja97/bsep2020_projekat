@@ -7,7 +7,8 @@ export const CertificateService = {
     createCertificate,
     getAll,
     get,
-    revoke
+    revoke,
+    download
 }
 
 function createCertificate(certificate) {
@@ -27,4 +28,8 @@ function get(id){
 
 function revoke(id, reason){
     return axios.delete(`${process.env.REACT_APP_API_URL}/v1/certificates/${id}?reason=${reason}`);
+}
+
+function download(id){
+    return axios.get(`${process.env.REACT_APP_API_URL}/v1/certificates/${id}?format=pem_key`, {responseType: "arraybuffer"});
 }

@@ -33,7 +33,7 @@ public class Startup implements ApplicationRunner {
         setupACL();
         for (AgentConfigItem item : readConfig().getSources()) {
             File f = new File(item.getPath());
-            if(f.isFile() || f.isDirectory()){
+            if(!item.getWindows()){
                 taskExecutor.execute(watcherService.watch(item));
             }else{
                 taskExecutor.execute(watcherService.watchWindows(item));

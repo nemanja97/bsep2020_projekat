@@ -12,6 +12,9 @@ public class AgentConfigItem {
     private Boolean simulated;
     private Boolean batch;
     private Integer batchTime;
+    private Boolean windows;
+    private String pattern;
+    private ArrayList<String> groups = new ArrayList<>();
 
     public AgentConfigItem() {
     }
@@ -20,7 +23,10 @@ public class AgentConfigItem {
                            @JsonProperty(value = "regexList")ArrayList<String> regexList,
                            @JsonProperty(value = "simulated", required = true)Boolean simulated,
                            @JsonProperty(value = "batch", required = true) Boolean batch,
-                           @JsonProperty(value = "batchTime")Integer batchTime) {
+                           @JsonProperty(value = "batchTime")Integer batchTime,
+                           @JsonProperty(value = "windows") Boolean windows,
+                           @JsonProperty(value = "pattern")String pattern,
+                           @JsonProperty(value = "groups")ArrayList<String> groups) {
         this.path = path;
         this.regexList = regexList;
         this.simulated = simulated;
@@ -30,6 +36,9 @@ public class AgentConfigItem {
         }else{
             this.batchTime = 0;
         }
+        this.windows = windows;
+        this.pattern = pattern;
+        this.groups = groups;
     }
 
     public String getPath() {
@@ -70,5 +79,29 @@ public class AgentConfigItem {
 
     public void setBatchTime(Integer batchTime) {
         this.batchTime = batchTime;
+    }
+
+    public Boolean getWindows() {
+        return windows;
+    }
+
+    public void setWindows(Boolean windows) {
+        this.windows = windows;
+    }
+
+    public String getPattern() {
+        return pattern;
+    }
+
+    public void setPattern(String pattern) {
+        this.pattern = pattern;
+    }
+
+    public ArrayList<String> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(ArrayList<String> groups) {
+        this.groups = groups;
     }
 }
