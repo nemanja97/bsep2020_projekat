@@ -22,6 +22,9 @@ export default function SIEMCenterNavbar() {
               Modify rules
             </Link>
           )}
+          <Link className="navbar-item" to="/siemcenter/reports">
+            Reports
+          </Link>
         </div>
 
         <div className="navbar-end">

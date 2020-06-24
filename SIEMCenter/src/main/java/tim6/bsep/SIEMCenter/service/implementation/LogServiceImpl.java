@@ -15,6 +15,7 @@ import tim6.bsep.SIEMCenter.model.drools.Alarm;
 import tim6.bsep.SIEMCenter.model.drools.LogWrapper;
 import tim6.bsep.SIEMCenter.repository.LogsRepository;
 import tim6.bsep.SIEMCenter.service.*;
+import tim6.bsep.SIEMCenter.web.v1.dto.ReportData;
 
 import java.util.Collection;
 import java.util.List;
@@ -88,5 +89,26 @@ public class LogServiceImpl implements LogService {
     @Override
     public Log findById(Long id) {
         return logsRepository.findById(id).orElse(null);
+    }
+
+
+    public List<ReportData> getLogsMonthlyCount(String startDate, String endDate){
+        return logsRepository.findLogsMonthlyCount(startDate, endDate);
+    }
+
+    public List<ReportData> getLogsWeeklyCount(String startDate, String endDate){
+        return logsRepository.findLogsWeeklyCount(startDate, endDate);
+    }
+
+    public List<ReportData> getLogsDailyCount(String startDate, String endDate){
+        return logsRepository.findLogsDailyCount(startDate, endDate);
+    }
+
+    public List<ReportData> getLogsTotalCountByType(String startDate, String endDate){
+        return logsRepository.findLogsTotalCountByType(startDate, endDate);
+    }
+
+    public List<ReportData> getLogsTotalCountByHostname(String startDate, String endDate){
+        return logsRepository.findLogsTotalCountByHostname(startDate, endDate);
     }
 }
