@@ -11,6 +11,7 @@ import PKIHome from './pki/PKIHome';
 import PKIAddCertificate from './pki/PKIAddCertificate';
 import CertificateDisplay from './pki/CertificateDisplay';
 import SIEMCenterHome from './siemcenter/SIEMCenterHome';
+import ReportsDashboard from './siemcenter/ReportsDashboard';
 import RulesDashboard from './siemcenter/RulesDashboard';
 import ModifyRule from './siemcenter/ModifyRule';
 import AddRule from './siemcenter/AddRule';
@@ -29,6 +30,7 @@ function App() {
         <PrivateRoute exact path='/pki/:id/addCertificate' component={PKIAddCertificate} roles={['PKI admin']}/>
         <PrivateRoute exact path='/pki/:id/' component={CertificateDisplay} roles={['PKI admin']}/>
         <PrivateRoute exact path='/siemcenter' component={SIEMCenterHome} roles={['SIEM center admin', 'SIEM center operator']}/>
+        <PrivateRoute exact path='/siemcenter/reports' component={ReportsDashboard} roles={['SIEM center admin', 'SIEM center operator']}/>
         <PrivateRoute exact path='/siemcenter/rules' component={RulesDashboard} roles={['SIEM center admin']}/>
         <PrivateRoute exact path='/siemcenter/rule' component={AddRule} roles={['SIEM center admin']}/>
         <PrivateRoute exact path='/siemcenter/rule/:id' component={ModifyRule} roles={['SIEM center admin']}/>

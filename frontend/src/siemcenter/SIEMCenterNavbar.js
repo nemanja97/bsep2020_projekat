@@ -24,6 +24,9 @@ export default function SIEMCenterNavbar() {
               Modify rules
             </Link>
           )}
+          <Link className="navbar-item" to="/siemcenter/reports">
+            Reports
+          </Link>
           {roles.includes("SIEM center admin") && (
             <Link className="navbar-item" to="/siemcenter/whitelists">
               Modify whitelists

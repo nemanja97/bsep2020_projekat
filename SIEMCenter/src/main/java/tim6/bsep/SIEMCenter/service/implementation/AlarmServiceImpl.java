@@ -14,6 +14,7 @@ import tim6.bsep.SIEMCenter.model.drools.QAlarm;
 import tim6.bsep.SIEMCenter.model.enums.FacilityType;
 import tim6.bsep.SIEMCenter.model.enums.LogType;
 import tim6.bsep.SIEMCenter.model.enums.SeverityLevel;
+import tim6.bsep.SIEMCenter.web.v1.dto.ReportData;
 import tim6.bsep.SIEMCenter.repository.AlarmsRepository;
 import tim6.bsep.SIEMCenter.service.AlarmService;
 import tim6.bsep.SIEMCenter.service.RuleService;
@@ -135,6 +136,26 @@ public class AlarmServiceImpl implements AlarmService {
             builder.and(qAlarm.timestamp.before(toDate));
 
         return builder;
+    }
+
+    public List<ReportData> getAlarmsMonthlyCount(String startDate, String endDate){
+        return alarmsRepository.findAlarmsMonthlyCount(startDate, endDate);
+    }
+
+    public List<ReportData> getAlarmsWeeklyCount(String startDate, String endDate){
+        return alarmsRepository.findAlarmsWeeklyCount(startDate, endDate);
+    }
+
+    public List<ReportData> getAlarmsDailyCount(String startDate, String endDate){
+        return alarmsRepository.findAlarmsDailyCount(startDate, endDate);
+    }
+
+    public List<ReportData> getAlarmsTotalCountByType(String startDate, String endDate){
+        return alarmsRepository.findAlarmsTotalCountByType(startDate, endDate);
+    }
+
+    public List<ReportData> getAlarmsTotalCountByHostname(String startDate, String endDate){
+        return alarmsRepository.findAlarmsTotalCountByHostname(startDate, endDate);
     }
 
 

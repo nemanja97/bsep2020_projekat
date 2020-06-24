@@ -28,6 +28,7 @@
     "react-widgets": "^4.5.0",
     "react-widgets-moment": "^4.0.28",
     "react-widgets-moment-localizer": "^1.0.2",
+    "recharts": "^1.8.5",
     "socket.io": "^2.3.0",
     "sockjs": "^0.3.20",
     "sockjs-client": "^1.4.0"
