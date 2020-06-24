@@ -1,7 +1,4 @@
 import axios from "axios"
-import moment from 'moment'
-import qs from "querystring"
-import jwt_decode from 'jwt-decode'
 
 export const CertificateService = {
     createCertificate,

@@ -1,0 +1,15 @@
+package bsep.integration.predefined;
+   import tim6.bsep.SIEMCenter.model.drools.LogWrapper;
+   import tim6.bsep.SIEMCenter.model.drools.Alarm
+   import tim6.bsep.SIEMCenter.model.enums.SeverityLevel
+
+   rule "Alert"
+       when
+           $logWrapper: LogWrapper(log.getSeverityLevel() == SeverityLevel.ALERT, handled == false)
+       then
+           System.out.println("Alert");
+           Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.ALERT, $logWrapper.getLog().getMessage());
+           $logWrapper.setHandled(true);
+           update($logWrapper);
+           insert(alarm);
+   end

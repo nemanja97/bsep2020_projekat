@@ -1,0 +1,93 @@
+package bsep.integration.predefined;
+import java.util.List;
+import tim6.bsep.SIEMCenter.model.drools.LogWrapper;
+import tim6.bsep.SIEMCenter.model.drools.Alarm
+import tim6.bsep.SIEMCenter.model.enums.SeverityLevel
+import org.apache.commons.lang3.StringUtils;
+
+rule "Error"
+    when
+        $logWrapper: LogWrapper(log.getSeverityLevel() == SeverityLevel.ERROR, handled == false)
+    then
+        System.out.println("Error");
+        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.ERROR, $logWrapper.getLog().getMessage());
+        $logWrapper.setHandled(true);
+        update($logWrapper);
+        insert(alarm);
+end
+
+rule "Invalid credentials"
+salience 2
+    when
+        $logWrapper: LogWrapper(log.getSeverityLevel() == SeverityLevel.ERROR, handled == false,
+            log.getMessage().matches(".*(Invalid credentials).*"),
+                $username: StringUtils.substringBetween(log.getMessage(), "username: ", "|"))
+    then
+        System.out.println("Invalid credentials");
+        System.out.println($username);
+        String alarmMessage = String.format("Invalid credentials alarm username: %s|", $username);
+        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.ERROR, alarmMessage);
+        $logWrapper.setHandled(true);
+        update($logWrapper);
+        insert(alarm);
+end
+
+rule "Backup failed"
+salience 2
+    when
+        $logWrapper: LogWrapper(log.getSeverityLevel() == SeverityLevel.ERROR, handled == false,
+            log.getMessage().equals("Backup failed"))
+    then
+        System.out.println("Backup failed");
+        String alarmMessage = "Backup failed";
+        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.ERROR, alarmMessage);
+        $logWrapper.setHandled(true);
+        update($logWrapper);
+        insert(alarm);
+end
+
+rule "More than 3 invalid credentials alarm on same machine in last 60 seconds"
+salience 3
+    when
+        $logWrapper: LogWrapper($host: log.getHostname(), log.getSeverityLevel() == SeverityLevel.ERROR, handled == false,
+            log.getMessage().matches(".*(Invalid credentials).*"))
+        $list : List() from collect (Alarm(message.matches(".*(Invalid credentials alarm).*"), hostnames contains $host) over window:time(60s))
+        eval($list.size() >= 2)
+    then
+        System.out.println("More than 3 invalid credentials alarm on same machine in last 60 seconds");
+        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.ALERT, "More than 3 invalid credentials alarm on same machine in last 60 seconds alarm");
+        Alarm iter;
+        for(int i = 0; i < $list.size(); i++) {
+            iter = (Alarm) $list.get(i);
+            alarm.getLogIds().addAll(iter.getLogIds());
+            alarm.getHostnames().addAll(iter.getHostnames());
+        }
+        $logWrapper.setHandled(true);
+        update($logWrapper);
+        insert(alarm);
+end
+
+rule "More than 3 invalid credentials alarm with same username in last 60 seconds"
+salience 4
+    when
+        $logWrapper: LogWrapper(log.getSeverityLevel() == SeverityLevel.ERROR, handled == false,
+            log.getMessage().matches(".*(Invalid credentials).*"),
+              $username: StringUtils.substringBetween(log.getMessage(), "username: ", "|"))
+        $list : List() from collect (
+            Alarm(message == String.format("Invalid credentials alarm username: %s|",$username)) over window:time(60s)
+            )
+        eval($list.size() >= 2)
+    then
+        String alarmMessage = String.format("More than 3 invalid credentials alarm with same username: %s in last 60 seconds", $username);
+        System.out.println(alarmMessage);
+        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.ALERT, alarmMessage);
+        Alarm iter;
+        for(int i = 0; i < $list.size(); i++) {
+            iter = (Alarm) $list.get(i);
+            alarm.getLogIds().addAll(iter.getLogIds());
+            alarm.getHostnames().addAll(iter.getHostnames());
+        }
+        $logWrapper.setHandled(true);
+        update($logWrapper);
+        insert(alarm);
+end

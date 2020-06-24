@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 import App from './App';
 import {setupInterceptors} from './interceptors/tokenInterceptor'
 import * as serviceWorker from './serviceWorker';
+import 'react-widgets/dist/css/react-widgets.css';
+import "./index.scss";
 
 setupInterceptors();
 

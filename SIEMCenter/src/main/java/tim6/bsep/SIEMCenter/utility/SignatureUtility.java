@@ -1,5 +1,8 @@
 package tim6.bsep.SIEMCenter.utility;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.SerializationUtils;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -15,9 +18,13 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.Store;
 import tim6.bsep.SIEMCenter.keystore.KeyStoreReader;
+import tim6.bsep.SIEMCenter.model.Log;
+import tim6.bsep.SIEMCenter.web.v1.dto.LogDTO;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.CertificateEncodingException;
@@ -78,7 +85,16 @@ public class SignatureUtility {
         return signer.verify(new JcaSimpleSignerInfoVerifierBuilder().build(certificate.getPublicKey()));
     }
 
-    public static String extractMessage(byte[] signedMessage) throws IOException, CMSException {
+    public static LogDTO extractMessage(byte[] signedMessage) throws IOException, CMSException {
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(signedMessage);
+        ASN1InputStream asnInputStream = new ASN1InputStream(inputStream);
+        CMSSignedData cmsSignedData = new CMSSignedData(ContentInfo.getInstance(asnInputStream.readObject()));
+        CMSProcessable msg = cmsSignedData.getSignedContent();
+
+        return logFromJson(new String((byte[]) msg.getContent()));
+    }
+
+    public static String extractMessageString(byte[] signedMessage) throws IOException, CMSException {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(signedMessage);
         ASN1InputStream asnInputStream = new ASN1InputStream(inputStream);
         CMSSignedData cmsSignedData = new CMSSignedData(ContentInfo.getInstance(asnInputStream.readObject()));
@@ -98,5 +114,15 @@ public class SignatureUtility {
         Iterator<?> certIt = certCollection.iterator();
         X509CertificateHolder certHolder = (X509CertificateHolder) certIt.next();
         return new JcaX509CertificateConverter().setProvider( "BC" ).getCertificate(certHolder);
+    }
+
+    private static LogDTO logFromJson(String log) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            return objectMapper.readValue(log, LogDTO.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

@@ -18,7 +18,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
-        String filePath = "";
+        String filePath = "E:\\logs3";
 
         File file = new File(filePath);
         if (!file.exists()) {

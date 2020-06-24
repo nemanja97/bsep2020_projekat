@@ -34,4 +34,17 @@ public class CreateCertificateDTO {
     @NotBlank(message = "Template can't be empty")
     private String template;
 
+    @Override
+    public String toString() {
+        return "CreateCertificateDTO{" +
+                "issuerAlias='" + issuerAlias + '\'' +
+                ", alias='" + alias + '\'' +
+                ", commonName='" + commonName + '\'' +
+                ", organization='" + organization + '\'' +
+                ", organizationUnit='" + organizationUnit + '\'' +
+                ", country='" + country + '\'' +
+                ", email='" + email + '\'' +
+                ", template='" + template + '\'' +
+                '}';
+    }
 }

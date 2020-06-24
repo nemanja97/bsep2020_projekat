@@ -84,7 +84,7 @@ public class CertificateFilter extends GenericFilterBean {
                 response.setStatus(500);
                 return false;
             }
-            if(SignatureUtility.extractMessage(signedResponse).equals("false")){
+            if(SignatureUtility.extractMessageString(signedResponse).equals("false")){
                 response.setStatus(403);
                 return false;
             }

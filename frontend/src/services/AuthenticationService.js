@@ -6,7 +6,8 @@ import jwt_decode from 'jwt-decode'
 export const AuthenticationService = {
     authenticate,
     refreshToken,
-    checkTokensExp
+    checkTokensExp,
+    purgeToken
 }
 
 function authenticate(userCredentials){

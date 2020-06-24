@@ -1,0 +1,50 @@
+package bsep.integration.predefined;
+import tim6.bsep.SIEMCenter.model.drools.LogWrapper;
+import tim6.bsep.SIEMCenter.model.drools.Alarm
+import tim6.bsep.SIEMCenter.model.enums.SeverityLevel
+import tim6.bsep.SIEMCenter.service.BlacklistService;
+import tim6.bsep.SIEMCenter.service.WhitelistService;
+
+global BlacklistService blacklistService;
+global WhitelistService whitelistService;
+
+rule "Warning"
+    when
+        $logWrapper: LogWrapper(log.getSeverityLevel() == SeverityLevel.WARNING, handled == false)
+    then
+        System.out.println(String.format("Warning: %s", $logWrapper.getLog().getMessage()));
+        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.WARNING, $logWrapper.getLog().getMessage());
+        $logWrapper.setHandled(true);
+        update($logWrapper);
+        insert(alarm);
+end
+
+rule "More than 3 encrypted files in the last 60 seconds"
+salience 2
+    when
+        $logWrapper: LogWrapper(
+            log.getSeverityLevel() == SeverityLevel.WARNING,
+            handled == false,
+            log.getMessage().matches("Encrypted \\{.*\\} file"),
+            $fileName: log.getMessage().substring(log.getMessage().indexOf("{") + 1, log.getMessage().lastIndexOf("}"))
+        )
+        $list : List() from collect (
+            Alarm(message == String.format("Encrypted {%s} file", $fileName)) over window:time(60s)
+        )
+        eval($list.size() >= 2)
+    then
+        String alarmMessage = "Ransomware attack";
+        System.out.println(alarmMessage);
+
+        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.EMERGENCY, alarmMessage);
+        Alarm iter;
+        for(int i = 0; i < $list.size(); i++) {
+            iter = (Alarm) $list.get(i);
+            alarm.getLogIds().addAll(iter.getLogIds());
+            alarm.getHostnames().addAll(iter.getHostnames());
+        }
+
+        $logWrapper.setHandled(true);
+        update($logWrapper);
+        insert(alarm);
+end
