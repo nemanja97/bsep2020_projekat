@@ -23,7 +23,7 @@ public class ParsingUtility {
         df.setTimeZone(tz);
         Pattern r = Pattern.compile(item.getPattern());
         Matcher m = r.matcher(line);
-        LogType type
+        LogType type;
         if(item.getSimulated()){
             type = LogType.SIMULATED;
         }else {
