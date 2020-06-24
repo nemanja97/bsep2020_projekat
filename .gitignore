@@ -95,3 +95,6 @@ PKI/logs/
 
 # keystore
 PKI/src/main/resources/keystore.jks
+
+# index
+*.idx

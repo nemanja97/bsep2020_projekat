@@ -1,0 +1,28 @@
+{
+  "sources": [
+    {
+      "path": "Security",
+      "batch": true,
+      "batchTime": 1000,
+      "simulated": false,
+      "regexList": [".*ID: (4625|4624).*"],
+      "windows": true
+    },
+    {
+      "path": "Application",
+      "batch": true,
+      "batchTime": 1000,
+      "simulated": false,
+      "regexList": [],
+      "windows": true
+    },
+    {
+      "path": "System",
+      "batch": true,
+      "batchTime": 1000,
+      "simulated": false,
+      "regexList": [],
+      "windows": true
+    }
+  ]
+}
