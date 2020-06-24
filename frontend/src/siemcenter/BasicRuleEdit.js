@@ -5,32 +5,31 @@ import { Combobox } from "react-widgets";
 const BasicRuleEdit = (props) => {
   return (
     <>
-      <div class="container is-fluid">
-        <div class="columns is-mobile">
-          <div class="column is-9">
-            <div class="control">
+      <div className="container is-fluid">
+        <div className="columns is-mobile">
+          <div className="column is-9">
+            <div className="control">
               <input
-                class="input"
+                className="input"
                 type="text"
                 value={props.rule.name}
-                placeholder={props.rule.name}
+                placeholder="Rule name"
                 style={{ marginBottom: "10px" }}
                 onChange={props.inputChange("name")}
               />
               <textarea
-                class="textarea has-fixed-size"
-                readonly
+                className="textarea has-fixed-size"
                 rows="20"
                 onChange={props.inputChange("content")}
+                value={props.rule.content}
               >
-                {props.rule.content}
               </textarea>
             </div>
           </div>
-          <div class="column is-3">
+          <div className="column is-3">
             <textarea
               style={{ marginTop: "50px" }}
-              class="textarea has-fixed-size"
+              className="textarea has-fixed-size"
               readonly
               rows="10"
               placeholder="Validation output"
@@ -52,18 +51,18 @@ const BasicRuleEdit = (props) => {
                 onChange={props.widgetChange("produces")}
               />
             </div>
-            <div class="control">
+            <div className="control">
               <button
-                class="button is-fullwidth is-primary"
+                className="button is-fullwidth is-primary"
                 style={{ marginTop: "5px", marginBottom: "5px" }}
                 onClick={() => props.save()}
               >
                 Save
               </button>
             </div>
-            <div class="control">
+            <div className="control">
               <button
-                class="button is-fullwidth is-info"
+                className="button is-fullwidth is-info"
                 onClick={() => props.validate()}
               >
                 Validate

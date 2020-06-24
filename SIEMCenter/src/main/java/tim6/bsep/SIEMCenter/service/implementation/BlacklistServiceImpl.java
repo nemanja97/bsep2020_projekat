@@ -43,7 +43,7 @@ public class BlacklistServiceImpl implements BlacklistService {
         Blacklist oldBlacklist = findById(id);
         if (oldBlacklist != null) {
             oldBlacklist.setContent(blacklist.getContent());
-            oldBlacklist.setName(oldBlacklist.getName());
+            oldBlacklist.setName(blacklist.getName());
             blacklistRepository.save(oldBlacklist);
             return true;
         }

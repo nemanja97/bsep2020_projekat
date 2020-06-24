@@ -43,7 +43,7 @@ public class WhitelistServiceImpl implements WhitelistService {
         Whitelist oldWhitelist = findById(id);
         if (oldWhitelist != null) {
             oldWhitelist.setContent(whitelist.getContent());
-            oldWhitelist.setName(oldWhitelist.getName());
+            oldWhitelist.setName(whitelist.getName());
             whitelistRepository.save(oldWhitelist);
             return true;
         }

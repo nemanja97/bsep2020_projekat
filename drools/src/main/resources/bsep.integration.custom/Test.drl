@@ -1,0 +1,35 @@
+package bsep.integration.custom;
+        import tim6.bsep.SIEMCenter.model.drools.LogWrapper;
+        import tim6.bsep.SIEMCenter.model.drools.Alarm
+        import tim6.bsep.SIEMCenter.model.enums.SeverityLevel
+        import java.util.List;
+        import org.apache.commons.lang3.StringUtils;
+
+        rule "TestRule"
+        salience 2
+            when
+                $logWrapper: LogWrapper(
+                    log.getSeverityLevel() == SeverityLevel.CRITICAL,
+                    handled == false,
+                    log.getMessage().matches("Test")
+                )
+                $list : List() from collect (
+                    Alarm(message == "Test" over window:time(50s)
+                )
+                eval($list.size() >= 5)
+            then
+                String alarmMessage = "Test";
+                System.out.println(alarmMessage);
+
+                Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.WARNING, alarmMessage);
+                Alarm iter;
+                for(int i = 0; i < $list.size(); i++) {
+                    iter = (Alarm) $list.get(i);
+                    alarm.getLogIds().addAll(iter.getLogIds());
+                    alarm.getHostnames().addAll(iter.getHostnames());
+                }
+
+                $logWrapper.setHandled(true);
+                update($logWrapper);
+                insert(alarm);
+        end

@@ -100,7 +100,7 @@ function RulesDashboard() {
 
   const handleDelete = async (id) => {
     await RuleService.deleteRule(id).then(() => {
-      setRules((prevState) => prevState.filter((el) => el.id != id));
+      setRules((prevState) => prevState.filter((el) => el.id !== id));
     });
   };
 
@@ -122,9 +122,9 @@ function RulesDashboard() {
           <div className="message-body">{dangerousAlarms[0].message}</div>
         </article>
       )}
-      <div class="container">
-        <div class="columns is-centered is-vcentered is-mobile">
-          <div class="column has-text-centered">
+      <div className="container">
+        <div className="columns is-centered is-vcentered is-mobile">
+          <div className="column has-text-centered">
             <SearchRules
               handleSearchFormInputChange={handleSearchFormInputChange}
               handleSearchFormWidgetChange={handleSearchFormWidgetChange}

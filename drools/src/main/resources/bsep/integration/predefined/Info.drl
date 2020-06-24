@@ -15,7 +15,7 @@ rule "Attempted to execute not allowed application"
     when
         $logWrapper: LogWrapper(
             log.getSeverityLevel() == SeverityLevel.INFORMATIONAL, handled == false,
-            log.getMessage() matches "Attempted to execute \\{.*\\}",
+            log.get Message() matches "Attempted to execute \\{.*\\}",
             $applicationName: log.getMessage().substring(log.getMessage().indexOf("{") + 1, log.getMessage().lastIndexOf("}"))
         )
         eval(whitelistService.getByName("APPLICATIONS") != null &&
