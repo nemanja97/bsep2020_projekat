@@ -32,4 +32,17 @@ public class LogListRequest {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private Date toDate;
 
+    @Override
+    public String toString() {
+        return "LogListRequest{" +
+                "ids=" + ids +
+                ", facilityTypes=" + facilityTypes +
+                ", severityLevels=" + severityLevels +
+                ", hostnames='" + hostnames + '\'' +
+                ", message='" + message + '\'' +
+                ", types=" + types +
+                ", fromDate=" + fromDate +
+                ", toDate=" + toDate +
+                '}';
+    }
 }

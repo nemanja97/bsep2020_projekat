@@ -29,5 +29,14 @@ public class WhitelistDTO {
         name = whitelist.getName();
         content = whitelist.getContent();
     }
+
+    @Override
+    public String toString() {
+        return "WhitelistDTO{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", content=" + content +
+                '}';
+    }
 }
 

@@ -29,4 +29,13 @@ public class BlacklistDTO {
         name = blacklist.getName();
         content = blacklist.getContent();
     }
+
+    @Override
+    public String toString() {
+        return "BlacklistDTO{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", content=" + content +
+                '}';
+    }
 }

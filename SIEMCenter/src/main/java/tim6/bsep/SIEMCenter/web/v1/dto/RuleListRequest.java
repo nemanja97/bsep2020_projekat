@@ -17,4 +17,14 @@ public class RuleListRequest {
     private List<SeverityLevel> produces;
 
     private List<SeverityLevel> consumes;
+
+    @Override
+    public String toString() {
+        return "RuleListRequest{" +
+                "ids=" + ids +
+                ", name='" + name + '\'' +
+                ", produces=" + produces +
+                ", consumes=" + consumes +
+                '}';
+    }
 }

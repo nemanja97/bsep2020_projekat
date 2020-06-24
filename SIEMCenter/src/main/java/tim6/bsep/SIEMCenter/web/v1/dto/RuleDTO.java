@@ -30,4 +30,15 @@ public class RuleDTO {
         produces = rule.getProduces();
         consumes = rule.getConsumes();
     }
+
+    @Override
+    public String toString() {
+        return "RuleDTO{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", content='" + content + '\'' +
+                ", produces=" + produces +
+                ", consumes=" + consumes +
+                '}';
+    }
 }
