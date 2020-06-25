@@ -3,7 +3,9 @@ package tim6.bsep.pki.web.v1.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.util.HashMap;
 
 @Getter
@@ -26,9 +28,11 @@ public class CreateCertificateDTO {
     private String organizationUnit;
 
     @NotBlank(message = "Country can't be empty")
+    @Size(min=2, max=2)
     private String country;
 
     @NotBlank(message = "Email can't be empty")
+    @Email
     private String email;
 
     @NotBlank(message = "Template can't be empty")
