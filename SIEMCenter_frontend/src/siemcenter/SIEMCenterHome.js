@@ -107,7 +107,7 @@ function SIEMCenterHome() {
 
     alarmStompClient.onConnect = function (frame) {
       console.log("Alarm STOMP connected: " + frame);
-      alarmStompClient.subscribe("/alarms", function (messageOutput) {
+      alarmStompClient.subscribe("/topic/messages", function (messageOutput) {
         websocket_updateAlarms(messageOutput);
       });
     };
