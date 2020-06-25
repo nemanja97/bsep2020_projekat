@@ -19,6 +19,7 @@ import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.Store;
 import tim6.bsep.SIEMCenter.keystore.KeyStoreReader;
 import tim6.bsep.SIEMCenter.model.Log;
+import tim6.bsep.SIEMCenter.model.LogList;
 import tim6.bsep.SIEMCenter.web.v1.dto.LogDTO;
 
 import java.io.ByteArrayInputStream;
@@ -85,7 +86,7 @@ public class SignatureUtility {
         return signer.verify(new JcaSimpleSignerInfoVerifierBuilder().build(certificate.getPublicKey()));
     }
 
-    public static LogDTO extractMessage(byte[] signedMessage) throws IOException, CMSException {
+    public static LogList extractMessage(byte[] signedMessage) throws IOException, CMSException {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(signedMessage);
         ASN1InputStream asnInputStream = new ASN1InputStream(inputStream);
         CMSSignedData cmsSignedData = new CMSSignedData(ContentInfo.getInstance(asnInputStream.readObject()));
@@ -116,10 +117,10 @@ public class SignatureUtility {
         return new JcaX509CertificateConverter().setProvider( "BC" ).getCertificate(certHolder);
     }
 
-    private static LogDTO logFromJson(String log) {
+    private static LogList logFromJson(String log) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            return objectMapper.readValue(log, LogDTO.class);
+            return objectMapper.readValue(log, LogList.class);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
