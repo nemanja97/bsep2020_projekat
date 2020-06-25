@@ -54,9 +54,6 @@ function AddRule() {
   useEffect(() => {
     let content = "";
     switch (activeTemplate) {
-      case 0:
-        setRule({ ...rule, content: content });
-        break;
       case 1:
         content = `package bsep.integration.custom;
         import tim6.bsep.SIEMCenter.model.drools.LogWrapper;
