@@ -6,6 +6,8 @@ import Login from "./shared/Login";
 import PKIHome from "./pki/PKIHome";
 import PKIAddCertificate from "./pki/PKIAddCertificate";
 import CertificateDisplay from "./pki/CertificateDisplay";
+import Requests from "./pki/Requests";
+import CSR from "./pki/CSR";
 
 function App() {
   return (
@@ -29,6 +31,17 @@ function App() {
           path="/pki/:id/"
           component={CertificateDisplay}
           roles={["PKI admin"]}
+        />
+        <PrivateRoute
+          exact
+          path="/requests/"
+          component={Requests}
+          roles={["PKI admin"]}
+        />
+        <Route
+          exact
+          path="/request/:id"
+          component={CSR}
         />
       </Switch>
     </Router>
