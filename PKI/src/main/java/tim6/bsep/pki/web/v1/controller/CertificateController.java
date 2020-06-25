@@ -16,6 +16,7 @@ import tim6.bsep.pki.model.CertificateInfo;
 import tim6.bsep.pki.model.CertificateInfoWithChildren;
 import tim6.bsep.pki.model.RevocationReason;
 import tim6.bsep.pki.service.CertificateInfoService;
+import tim6.bsep.pki.service.ExpirableLinkService;
 import tim6.bsep.pki.service.KeyStoreService;
 import tim6.bsep.pki.service.implementation.CertificateServiceImpl;
 import tim6.bsep.pki.utility.SignatureUtility;
@@ -42,6 +43,9 @@ public class CertificateController {
 
     @Autowired
     CertificateInfoService certificateInfoService;
+
+    @Autowired
+    ExpirableLinkService expirableLinkService;
 
     @Autowired
     KeyStoreService keyStoreService;
@@ -146,6 +150,37 @@ public class CertificateController {
 
         logger.info(String.format("Method outcome %s", HttpStatus.OK));
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/csr", method = RequestMethod.POST, consumes = "application/json")
+    public ResponseEntity<Object> createCSRCertificate(@Valid @RequestBody CreateCertificateDTO certificateDTO, @RequestParam String link) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException, UnknownTemplateException, AliasAlreadyTakenException, ExpirableLinkNotPresentException, IOException, CertificateParsingException {
+        logger.info(String.format("Method %s called with parameters certificateDTO=%s, link=%s", "createCSRCertificate", certificateDTO, link));
+        certificateDTO.setIssuerAlias("root");
+        certificateDTO.setTemplate("SIEM_AGENT");
+        X500Name subjectData = CertificateInfoMapper.nameFromDTO(certificateDTO);
+
+        CertificateInfo info = certificateServiceImpl.createCertificate(certificateDTO.getIssuerAlias(), certificateDTO.getAlias(), subjectData, certificateDTO.getTemplate());
+        expirableLinkService.updateExpirableLinkWithCertificateId(link, info.getId());
+
+        X509Certificate certificate = certificateServiceImpl.findByAlias(info.getAlias());
+        if (certificate == null) {
+            logger.info(String.format("Method outcome %s", HttpStatus.NOT_FOUND));
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        ByteArrayOutputStream outputStream = certificateServiceImpl.getPemCertificateChainWithPrivateKey(info.getAlias());
+        byte[] contents = outputStream.toByteArray();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        String filename = "certificate.zip";
+        ContentDisposition contentDisposition = ContentDisposition
+                .builder("inline")
+                .filename(filename)
+                .build();
+        headers.setContentDisposition(contentDisposition);
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+        logger.info(String.format("Method outcome %s", HttpStatus.OK));
+        return new ResponseEntity<>(contents, headers, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)

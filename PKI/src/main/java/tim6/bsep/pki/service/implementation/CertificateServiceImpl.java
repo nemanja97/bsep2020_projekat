@@ -38,7 +38,7 @@ public class CertificateServiceImpl implements CertificateService {
     @Autowired
     private CertificateInfoService certificateInfoService;
 
-    public X509Certificate createCertificate(String issuerAlias, String alias, X500Name subjectName, String template) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException, UnknownTemplateException, AliasAlreadyTakenException {
+    public CertificateInfo createCertificate(String issuerAlias, String alias, X500Name subjectName, String template) throws CertificateNotFoundException, IssuerNotCAException, IssuerNotValidException, UnknownTemplateException, AliasAlreadyTakenException {
         keyStoreService.loadKeyStore();
         Certificate[] issuerCertificateChain = keyStoreService.readCertificateChain(issuerAlias);
         IssuerData issuerData = keyStoreService.readIssuerFromStore(issuerAlias);
@@ -68,23 +68,19 @@ public class CertificateServiceImpl implements CertificateService {
 
         switch (template) {
             case "INTERMEDIATE_CA":
-                createX509Certificate_INTERMEDIATE_CA(issuerAlias, alias, issuerCertificateChain, issuerData, keyPair, subjectData);
-                return null;
+                return createX509Certificate_INTERMEDIATE_CA(issuerAlias, alias, issuerCertificateChain, issuerData, keyPair, subjectData);
             case "TLS_SERVER":
-                createX509Certificate_TLS_SERVER(issuerAlias, alias, issuerCertificateChain, issuerData, keyPair, subjectData);
-                return null;
+                return createX509Certificate_TLS_SERVER(issuerAlias, alias, issuerCertificateChain, issuerData, keyPair, subjectData);
             case "SIEM_CENTER":
-                createX509Certificate_SIEM_CENTER(issuerAlias, alias, issuerCertificateChain, issuerData, keyPair, subjectData);
-                return null;
+                return createX509Certificate_SIEM_CENTER(issuerAlias, alias, issuerCertificateChain, issuerData, keyPair, subjectData);
             case "SIEM_AGENT":
-                createX509Certificate_SIEM_AGENT(issuerAlias, alias, issuerCertificateChain, issuerData, keyPair, subjectData);
-                return null;
+                return createX509Certificate_SIEM_AGENT(issuerAlias, alias, issuerCertificateChain, issuerData, keyPair, subjectData);
             default:
                 throw new UnknownTemplateException(template);
         }
     }
 
-    private void createX509Certificate_INTERMEDIATE_CA(
+    private CertificateInfo createX509Certificate_INTERMEDIATE_CA(
             String issuerAlias, String alias, Certificate[] issuerCertificateChain, IssuerData issuerData, KeyPair keyPair, SubjectData subjectData) {
 
         Date[] dates;
@@ -99,9 +95,10 @@ public class CertificateServiceImpl implements CertificateService {
         Certificate[] newCertificateChain = ArrayUtils.insert(0, issuerCertificateChain, createdCertificate);
         keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
+        return certInfo;
     }
 
-    private void createX509Certificate_TLS_SERVER(
+    private CertificateInfo createX509Certificate_TLS_SERVER(
             String issuerAlias, String alias, Certificate[] issuerCertificateChain, IssuerData issuerData, KeyPair keyPair, SubjectData subjectData) {
 
         Date[] dates;
@@ -116,9 +113,10 @@ public class CertificateServiceImpl implements CertificateService {
         Certificate[] newCertificateChain = ArrayUtils.insert(0, issuerCertificateChain, createdCertificate);
         keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
+        return certInfo;
     }
 
-    private void createX509Certificate_SIEM_CENTER(
+    private CertificateInfo createX509Certificate_SIEM_CENTER(
             String issuerAlias, String alias, Certificate[] issuerCertificateChain, IssuerData issuerData, KeyPair keyPair, SubjectData subjectData) {
 
         Date[] dates;
@@ -133,9 +131,10 @@ public class CertificateServiceImpl implements CertificateService {
         Certificate[] newCertificateChain = ArrayUtils.insert(0, issuerCertificateChain, createdCertificate);
         keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
+        return certInfo;
     }
 
-    private void createX509Certificate_SIEM_AGENT(
+    private CertificateInfo createX509Certificate_SIEM_AGENT(
             String issuerAlias, String alias, Certificate[] issuerCertificateChain, IssuerData issuerData, KeyPair keyPair, SubjectData subjectData) {
 
         Date[] dates;
@@ -150,6 +149,7 @@ public class CertificateServiceImpl implements CertificateService {
         Certificate[] newCertificateChain = ArrayUtils.insert(0, issuerCertificateChain, createdCertificate);
         keyStoreService.savePrivateKey(alias, newCertificateChain, keyPair.getPrivate());
         keyStoreService.saveKeyStore();
+        return certInfo;
     }
 
     @Override
