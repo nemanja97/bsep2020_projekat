@@ -9,18 +9,25 @@ def main():
     usernames = ['USERNAME-1111', 'USERNAME-9999', 'USERNAME-0000']
     paths = ['E:\\test.kk', 'C:\\Test\\Test1\\smh.exe']
     apps = ['Missile_launcher.exe', 'Defense_system.exe', 'BFG-9000.bat']
-    ips = ['192.0.0.1', '88.88.0.121', '65.12.8.125']
+    ips = ['192.0.0.1', '88.88.0.121']
+    blacklisted_ip = '65.12.8.125'
     processes = ['process1', 'process2', 'process3']
+
+    files=["FILE1", "FILE2"]
 
     while True:
         if state == 'normal':
             perform_normal_log(choice(usernames), choice(paths), choice(apps), choice(ips), choice(processes))
         else:
-            mode = randint(0, 2)
+            mode = randint(0, 4)
             if mode == 0:
                 perform_3_invalid_login(choice(usernames), choice(processes))
             elif mode == 1:
-                perform_3_access_denied(choice(paths), choice(processes))
+                perform_access_denied(choice(paths), choice(processes))
+            elif mode == 2:
+                perform_file_accesed(choice(files), choice(processes))
+            elif mode == 3:
+                perform_blacklisted_ip(blacklisted_ip, choice(processes))
             else:
                 perform_3_encryptions(choice(paths), choice(processes))
         sleep(3)
@@ -38,7 +45,6 @@ def perform_normal_log(username, path, app, ip, process):
     messages = [
         'Encrypted file {{{}}}'.format(path),
         'File {{{}}} accessed'.format(path),
-        'Access denied to {{{}}}'.format(path),
         'Attempted to execute {{{}}}'.format(app),
         'Backup successful',
         'Backup failed',
@@ -64,13 +70,43 @@ def perform_normal_log(username, path, app, ip, process):
     file.write(full_str)
     file.close()
 
+def perform_blacklisted_ip(ip, process):
+    date = datetime.utcnow()
+    date_str = date.strftime('%Y-%m-%dT%H:%M:%SZ')
+    facility = 'SECURITY'
+    severity = 'INFORMATIONAL'
+    host_name = platform.uname()[1]
+    messsage = 'Connection from {' + ip + '}'
+    date = datetime.utcnow()
+    date_str = date.strftime('%Y-%m-%dT%H:%M:%SZ')
+    full_str = '{}.{} {} {} {} {}\n'.format(facility, severity, date_str, host_name, process, messsage)
+    print(full_str)
+    file = open(sys.argv[1], 'a')
+    file.write(full_str)
+    file.close()
+
+def perform_file_accesed(file, process):
+    date = datetime.utcnow()
+    date_str = date.strftime('%Y-%m-%dT%H:%M:%SZ')
+    facility = 'SECURITY'
+    severity = 'INFORMATIONAL'
+    host_name = platform.uname()[1]
+    messsage = 'File {' + file + '} accessed'
+    date = datetime.utcnow()
+    date_str = date.strftime('%Y-%m-%dT%H:%M:%SZ')
+    full_str = '{}.{} {} {} {} {}\n'.format(facility, severity, date_str, host_name, process, messsage)
+    print(full_str)
+    file = open(sys.argv[1], 'a')
+    file.write(full_str)
+    file.close()
+
 def perform_3_invalid_login(username, process):
     date = datetime.utcnow()
     date_str = date.strftime('%Y-%m-%dT%H:%M:%SZ')
     facility = 'SECURITY'
     severity = 'ERROR'
     host_name = platform.uname()[1]
-    messsage = 'Invalid credentials username: ' + username
+    messsage = 'Invalid credentials username: {' + username + '}'
     for _ in range (3):
         date = datetime.utcnow()
         date_str = date.strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -81,22 +117,20 @@ def perform_3_invalid_login(username, process):
         file.close()
         sleep(3)
 
-def perform_3_access_denied(path, process):
+def perform_access_denied(path, process):
     date = datetime.utcnow()
     date_str = date.strftime('%Y-%m-%dT%H:%M:%SZ')
     facility = 'SECURITY'
     severity = 'WARNING'
     host_name = platform.uname()[1]
-    messsage = 'Access denied to ' + path
-    for _ in range (3):
-        date = datetime.utcnow()
-        date_str = date.strftime('%Y-%m-%dT%H:%M:%SZ')
-        full_str = '{}.{} {} {} {} {}\n'.format(facility, severity, date_str, host_name, process, messsage)
-        print(full_str)
-        file = open(sys.argv[1], 'a')
-        file.write(full_str)
-        file.close()
-        sleep(3)
+    messsage = 'Access denied to  {' + path + '}'
+    date = datetime.utcnow() 
+    date_str = date.strftime('%Y-%m-%dT%H:%M:%SZ')
+    full_str = '{}.{} {} {} {} {}\n'.format(facility, severity, date_str, host_name, process, messsage)
+    print(full_str)
+    file = open(sys.argv[1], 'a')
+    file.write(full_str)
+    file.close()
 
 def perform_3_encryptions(path, process):
     date = datetime.utcnow()
@@ -104,7 +138,7 @@ def perform_3_encryptions(path, process):
     facility = 'SECURITY'
     severity = 'INFORMATIONAL'
     host_name = platform.uname()[1]
-    messsage = 'Encrypted file ' + path
+    messsage = 'Encrypted file {' + path + '}'
     for _ in range (3):
         date = datetime.utcnow()
         date_str = date.strftime('%Y-%m-%dT%H:%M:%SZ')

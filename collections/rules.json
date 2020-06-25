@@ -1,0 +1,103 @@
+[{
+  "_id": 20,
+  "name": "Alert",
+  "content": "package bsep.integration.predefined;\n   import tim6.bsep.SIEMCenter.model.drools.LogWrapper;\n   import tim6.bsep.SIEMCenter.model.drools.Alarm\n   import tim6.bsep.SIEMCenter.model.enums.SeverityLevel\n\n   rule \"Alert\"\n       when\n           $logWrapper: LogWrapper(log.getSeverityLevel() == SeverityLevel.ALERT, handled == false)\n       then\n           System.out.println(\"Alert\");\n           Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.ALERT, $logWrapper.getLog().getMessage());\n           $logWrapper.setHandled(true);\n           update($logWrapper);\n           insert(alarm);\n   end",
+  "produces": "ALERT",
+  "consumes": "ALERT",
+  "_class": "tim6.bsep.SIEMCenter.model.Rule"
+},{
+  "_id": 21,
+  "name": "Critical",
+  "content": "package bsep.integration.predefined;\nimport tim6.bsep.SIEMCenter.model.drools.LogWrapper;\nimport tim6.bsep.SIEMCenter.model.drools.Alarm\nimport tim6.bsep.SIEMCenter.model.enums.SeverityLevel\n\nrule \"Critical\"\n    when\n        $logWrapper: LogWrapper(log.getSeverityLevel() == SeverityLevel.CRITICAL, handled == false)\n    then\n        System.out.println(\"Critical\");\n        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.CRITICAL, $logWrapper.getLog().getMessage());\n        $logWrapper.setHandled(true);\n        update($logWrapper);\n        insert(alarm);\nend",
+  "produces": "CRITICAL",
+  "consumes": "CRITICAL",
+  "_class": "tim6.bsep.SIEMCenter.model.Rule"
+},{
+  "_id": 22,
+  "name": "Emergency",
+  "content": "package bsep.integration.predefined;\nimport tim6.bsep.SIEMCenter.model.drools.LogWrapper;\nimport tim6.bsep.SIEMCenter.model.drools.Alarm\nimport tim6.bsep.SIEMCenter.model.enums.SeverityLevel\n\nrule \"Emergency\"\n    when\n        $logWrapper: LogWrapper(log.getSeverityLevel() == SeverityLevel.EMERGENCY, handled == false)\n    then\n        System.out.println(\"Emergency\");\n        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.EMERGENCY, $logWrapper.getLog().getMessage());\n        $logWrapper.setHandled(true);\n        update($logWrapper);\n        insert(alarm);\nend\n",
+  "produces": "EMERGENCY",
+  "consumes": "EMERGENCY",
+  "_class": "tim6.bsep.SIEMCenter.model.Rule"
+},{
+  "_id": 23,
+  "name": "Error",
+  "content": "package bsep.integration.predefined;\nimport java.util.List;\nimport tim6.bsep.SIEMCenter.model.drools.LogWrapper;\nimport tim6.bsep.SIEMCenter.model.drools.Alarm\nimport tim6.bsep.SIEMCenter.model.enums.SeverityLevel\nimport org.apache.commons.lang3.StringUtils;\n\nrule \"Error\"\n    when\n        $logWrapper: LogWrapper(log.getSeverityLevel() == SeverityLevel.ERROR, handled == false)\n    then\n        System.out.println(\"Error\");\n        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.ERROR, $logWrapper.getLog().getMessage());\n        $logWrapper.setHandled(true);\n        update($logWrapper);\n        insert(alarm);\nend",
+  "produces": "ERROR",
+  "consumes": "ERROR",
+  "_class": "tim6.bsep.SIEMCenter.model.Rule"
+},{
+  "_id": 24,
+  "name": "Invalid credentials",
+  "content": "package bsep.integration.predefined;\nimport java.util.List;\nimport tim6.bsep.SIEMCenter.model.drools.LogWrapper;\nimport tim6.bsep.SIEMCenter.model.drools.Alarm\nimport tim6.bsep.SIEMCenter.model.enums.SeverityLevel\nimport org.apache.commons.lang3.StringUtils;\n\nrule \"Invalid credentials\"\nsalience 2\n    when\n        $logWrapper: LogWrapper(log.getSeverityLevel() == SeverityLevel.ERROR, handled == false,\n            log.getMessage().matches(\".*(Invalid credentials).*\"),\n                $username: StringUtils.substringBetween(log.getMessage(), \"username: \", \"|\"))\n    then\n        System.out.println(\"Invalid credentials\");\n        System.out.println($username);\n        String alarmMessage = String.format(\"Invalid credentials alarm username: %s|\", $username);\n        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.ERROR, alarmMessage);\n        $logWrapper.setHandled(true);\n        update($logWrapper);\n        insert(alarm);\nend",
+  "produces": "ERROR",
+  "consumes": "ERROR",
+  "_class": "tim6.bsep.SIEMCenter.model.Rule"
+},{
+  "_id": 25,
+  "name": "Backup failed",
+  "content": "package bsep.integration.predefined;\nimport java.util.List;\nimport tim6.bsep.SIEMCenter.model.drools.LogWrapper;\nimport tim6.bsep.SIEMCenter.model.drools.Alarm\nimport tim6.bsep.SIEMCenter.model.enums.SeverityLevel\nimport org.apache.commons.lang3.StringUtils;\n\nrule \"Backup failed\"\nsalience 2\n    when\n        $logWrapper: LogWrapper(log.getSeverityLevel() == SeverityLevel.ERROR, handled == false,\n            log.getMessage().equals(\"Backup failed\"))\n    then\n        System.out.println(\"Backup failed\");\n        String alarmMessage = \"Backup failed\";\n        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.ERROR, alarmMessage);\n        $logWrapper.setHandled(true);\n        update($logWrapper);\n        insert(alarm);\nend",
+  "produces": "ERROR",
+  "consumes": "ERROR",
+  "_class": "tim6.bsep.SIEMCenter.model.Rule"
+},{
+  "_id": 26,
+  "name": "More than 3 invalid credentials alarm on same machine in last 60 seconds",
+  "content": "package bsep.integration.predefined;\nimport java.util.List;\nimport tim6.bsep.SIEMCenter.model.drools.LogWrapper;\nimport tim6.bsep.SIEMCenter.model.drools.Alarm\nimport tim6.bsep.SIEMCenter.model.enums.SeverityLevel\nimport org.apache.commons.lang3.StringUtils;\n\nrule \"More than 3 invalid credentials alarm on same machine in last 60 seconds\"\nsalience 3\n    when\n        $logWrapper: LogWrapper($host: log.getHostname(), log.getSeverityLevel() == SeverityLevel.ERROR, handled == false,\n            log.getMessage().matches(\".*(Invalid credentials).*\"))\n        $list : List() from collect (Alarm(message.matches(\".*(Invalid credentials alarm).*\"), hostnames contains $host) over window:time(60s))\n        eval($list.size() >= 2)\n    then\n        System.out.println(\"More than 3 invalid credentials alarm on same machine in last 60 seconds\");\n        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.ALERT, \"More than 3 invalid credentials alarm on same machine in last 60 seconds alarm\");\n        Alarm iter;\n        for(int i = 0; i < $list.size(); i++) {\n            iter = (Alarm) $list.get(i);\n            alarm.getLogIds().addAll(iter.getLogIds());\n            alarm.getHostnames().addAll(iter.getHostnames());\n        }\n        $logWrapper.setHandled(true);\n        update($logWrapper);\n        insert(alarm);\nend",
+  "produces": "ALERT",
+  "consumes": "ERROR",
+  "_class": "tim6.bsep.SIEMCenter.model.Rule"
+},{
+  "_id": 27,
+  "name": "More than 3 invalid credentials alarm with same username in last 60 seconds",
+  "content": "package bsep.integration.predefined;\nimport java.util.List;\nimport tim6.bsep.SIEMCenter.model.drools.LogWrapper;\nimport tim6.bsep.SIEMCenter.model.drools.Alarm\nimport tim6.bsep.SIEMCenter.model.enums.SeverityLevel\nimport org.apache.commons.lang3.StringUtils;\n\nrule \"More than 3 invalid credentials alarm with same username in last 60 seconds\"\nsalience 4\n    when\n        $logWrapper: LogWrapper(log.getSeverityLevel() == SeverityLevel.ERROR, handled == false,\n            log.getMessage().matches(\".*(Invalid credentials).*\"),\n              $username: StringUtils.substringBetween(log.getMessage(), \"username: \", \"|\"))\n        $list : List() from collect (\n            Alarm(message == String.format(\"Invalid credentials alarm username: %s|\",$username)) over window:time(60s)\n            )\n        eval($list.size() >= 2)\n    then\n        String alarmMessage = String.format(\"More than 3 invalid credentials alarm with same username: %s in last 60 seconds\", $username);\n        System.out.println(alarmMessage);\n        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.ALERT, alarmMessage);\n        Alarm iter;\n        for(int i = 0; i < $list.size(); i++) {\n            iter = (Alarm) $list.get(i);\n            alarm.getLogIds().addAll(iter.getLogIds());\n            alarm.getHostnames().addAll(iter.getHostnames());\n        }\n        $logWrapper.setHandled(true);\n        update($logWrapper);\n        insert(alarm);\nend",
+  "produces": "ALERT",
+  "consumes": "ERROR",
+  "_class": "tim6.bsep.SIEMCenter.model.Rule"
+},{
+  "_id": 28,
+  "name": "Attempted to execute not allowed application",
+  "content": "package bsep.integration.predefined;\nimport tim6.bsep.SIEMCenter.model.drools.LogWrapper;\nimport tim6.bsep.SIEMCenter.model.drools.Alarm\nimport tim6.bsep.SIEMCenter.model.enums.SeverityLevel\nimport tim6.bsep.SIEMCenter.service.implementation.BlacklistServiceImpl;\nimport tim6.bsep.SIEMCenter.service.implementation.WhitelistServiceImpl;\nimport tim6.bsep.SIEMCenter.model.Whitelist;\n\nglobal tim6.bsep.SIEMCenter.service.WhitelistService whitelistService\n\n\nrule \"Attempted to execute not allowed application\"\n    when\n        $logWrapper: LogWrapper(\n            log.getSeverityLevel() == SeverityLevel.INFORMATIONAL, handled == false,\n            log.getMessage() matches \"Attempted to execute \\\\{.*\\\\}\",\n            $applicationName: log.getMessage().substring(log.getMessage().indexOf(\"{\") + 1, log.getMessage().lastIndexOf(\"}\"))\n        )\n        eval(whitelistService.getByName(\"APPLICATIONS\") != null &&\n             !whitelistService.getByName(\"APPLICATIONS\").getContent().contains($applicationName)\n             )\n    then\n        String alarmMessage = String.format(\"Attempted to execute {%s}\", $applicationName);\n        System.out.println(alarmMessage);\n\n        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.WARNING, alarmMessage);\n        $logWrapper.setHandled(true);\n        update($logWrapper);\n        insert(alarm);\nend\n\n\n",
+  "produces": "WARNING",
+  "consumes": "INFORMATIONAL",
+  "_class": "tim6.bsep.SIEMCenter.model.Rule"
+},{
+  "_id": 29,
+  "name": "Warning",
+  "content": "package bsep.integration.predefined;\nimport tim6.bsep.SIEMCenter.model.drools.LogWrapper;\nimport tim6.bsep.SIEMCenter.model.drools.Alarm\nimport tim6.bsep.SIEMCenter.model.enums.SeverityLevel\n\nrule \"Warning\"\n    when\n        $logWrapper: LogWrapper(log.getSeverityLevel() == SeverityLevel.WARNING, handled == false)\n    then\n        System.out.println(String.format(\"Warning: %s\", $logWrapper.getLog().getMessage()));\n        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.WARNING, $logWrapper.getLog().getMessage());\n        $logWrapper.setHandled(true);\n        update($logWrapper);\n        insert(alarm);\nend",
+  "produces": "WARNING",
+  "consumes": "WARNING",
+  "_class": "tim6.bsep.SIEMCenter.model.Rule"
+},{
+  "_id": 30,
+  "name": "More than 3 encrypted files in the last 60 seconds",
+  "content": "package bsep.integration.predefined;\nimport java.util.List;\nimport tim6.bsep.SIEMCenter.model.drools.LogWrapper;\nimport tim6.bsep.SIEMCenter.model.drools.Alarm\nimport tim6.bsep.SIEMCenter.model.enums.SeverityLevel\n\nrule \"More than 3 encrypted files in the last 60 seconds\"\nsalience 2\n    when\n        $logWrapper: LogWrapper(\n            log.getSeverityLevel() == SeverityLevel.WARNING,\n            handled == false,\n            log.getMessage().matches(\"Encrypted \\\\{.*\\\\} file\"),\n            $fileName: log.getMessage().substring(log.getMessage().indexOf(\"{\") + 1, log.getMessage().lastIndexOf(\"}\"))\n        )\n        $list : List() from collect (\n            Alarm(message == String.format(\"Encrypted {%s} file\", $fileName)) over window:time(60s)\n        )\n        eval($list.size() >= 2)\n    then\n        String alarmMessage = \"Ransomware attack\";\n        System.out.println(alarmMessage);\n\n        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.EMERGENCY, alarmMessage);\n        Alarm iter;\n        for(int i = 0; i < $list.size(); i++) {\n            iter = (Alarm) $list.get(i);\n            alarm.getLogIds().addAll(iter.getLogIds());\n            alarm.getHostnames().addAll(iter.getHostnames());\n        }\n\n        $logWrapper.setHandled(true);\n        update($logWrapper);\n        insert(alarm);\nend",
+  "produces": "WARNING",
+  "consumes": "WARNING",
+  "_class": "tim6.bsep.SIEMCenter.model.Rule"
+},{
+  "_id": 1,
+  "name": "Connection to not allowed ip address",
+  "content": "package bsep.integration.predefined;\nimport tim6.bsep.SIEMCenter.model.drools.LogWrapper;\nimport tim6.bsep.SIEMCenter.model.drools.Alarm\nimport tim6.bsep.SIEMCenter.model.enums.SeverityLevel\nimport tim6.bsep.SIEMCenter.service.implementation.BlacklistServiceImpl;\nimport tim6.bsep.SIEMCenter.service.implementation.WhitelistServiceImpl;\nimport tim6.bsep.SIEMCenter.model.Whitelist;\n\nglobal tim6.bsep.SIEMCenter.service.WhitelistService whitelistService\n\n\nrule \"Connection to not allowed ip address\"\n    when\n        $logWrapper: LogWrapper(\n            log.getSeverityLevel() == SeverityLevel.INFORMATIONAL, handled == false,\n            log.getMessage() matches \"Connection to \\\\{.*\\\\}\",\n            $ipAddress: log.getMessage().substring(log.getMessage().indexOf(\"{\") + 1, log.getMessage().lastIndexOf(\"}\"))\n        )\n        eval(whitelistService.getByName(\"IP ADDRESSES\") != null &&\n             !whitelistService.getByName(\"IP ADDRESSES\").getContent().contains($ipAddress)\n             )\n    then\n        String alarmMessage = String.format(\"Connection to {%s}\", $ipAddress);\n        System.out.println(alarmMessage);\n\n        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.ALERT, alarmMessage);\n        $logWrapper.setHandled(true);\n        update($logWrapper);\n        insert(alarm);\nend\n\n\n",
+  "_class": "tim6.bsep.SIEMCenter.model.Rule"
+},{
+  "_id": 2,
+  "name": "Connection from not allowed ip address",
+  "content": "package bsep.integration.predefined;\nimport tim6.bsep.SIEMCenter.model.drools.LogWrapper;\nimport tim6.bsep.SIEMCenter.model.drools.Alarm\nimport tim6.bsep.SIEMCenter.model.enums.SeverityLevel\nimport tim6.bsep.SIEMCenter.service.implementation.BlacklistServiceImpl;\nimport tim6.bsep.SIEMCenter.service.implementation.WhitelistServiceImpl;\nimport tim6.bsep.SIEMCenter.model.Whitelist;\n\nglobal tim6.bsep.SIEMCenter.service.WhitelistService whitelistService\n\n\nrule \"Connection from not allowed ip address\"\n    when\n        $logWrapper: LogWrapper(\n            log.getSeverityLevel() == SeverityLevel.INFORMATIONAL, handled == false,\n            log.getMessage() matches \"Connection from \\\\{.*\\\\}\",\n            $ipAddress: log.getMessage().substring(log.getMessage().indexOf(\"{\") + 1, log.getMessage().lastIndexOf(\"}\"))\n        )\n        eval(whitelistService.getByName(\"IP ADDRESSES\") != null &&\n             !whitelistService.getByName(\"IP ADDRESSES\").getContent().contains($ipAddress)\n             )\n    then\n        String alarmMessage = String.format(\"Connection from {%s}\", $ipAddress);\n        System.out.println(alarmMessage);\n\n        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.ALERT, alarmMessage);\n        $logWrapper.setHandled(true);\n        update($logWrapper);\n        insert(alarm);\nend\n\n\n",
+  "_class": "tim6.bsep.SIEMCenter.model.Rule"
+},{
+  "_id": 3,
+  "name": "System update failed",
+  "content": "package bsep.integration.predefined;\nimport java.util.List;\nimport tim6.bsep.SIEMCenter.model.drools.LogWrapper;\nimport tim6.bsep.SIEMCenter.model.drools.Alarm\nimport tim6.bsep.SIEMCenter.model.enums.SeverityLevel\nimport org.apache.commons.lang3.StringUtils;\n\nrule \"System update failed\"\nsalience 2\n    when\n        $logWrapper: LogWrapper(log.getSeverityLevel() == SeverityLevel.ERROR, handled == false,\n            log.getMessage().equals(\"System update failed\"))\n    then\n        System.out.println(\"System update failed\");\n        String alarmMessage = \"System update failed\";\n        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.ERROR, alarmMessage);\n        $logWrapper.setHandled(true);\n        update($logWrapper);\n        insert(alarm);\nend",
+  "_class": "tim6.bsep.SIEMCenter.model.Rule"
+},{
+  "_id": 4,
+  "name": "Access denied to file",
+  "content": "package bsep.integration.predefined;\nimport tim6.bsep.SIEMCenter.model.drools.LogWrapper;\nimport tim6.bsep.SIEMCenter.model.drools.Alarm\nimport tim6.bsep.SIEMCenter.model.enums.SeverityLevel\nimport tim6.bsep.SIEMCenter.service.implementation.BlacklistServiceImpl;\nimport tim6.bsep.SIEMCenter.service.implementation.WhitelistServiceImpl;\nimport tim6.bsep.SIEMCenter.model.Whitelist;\n\nglobal tim6.bsep.SIEMCenter.service.WhitelistService whitelistService\n\n\nrule \"Access denied to file\"\n    when\n        $logWrapper: LogWrapper(\n            log.getSeverityLevel() == SeverityLevel.WARNING, handled == false,\n            log.getMessage() matches \"Access denied to \\\\{.*\\\\}\",\n            $fileName: log.getMessage().substring(log.getMessage().indexOf(\"{\") + 1, log.getMessage().lastIndexOf(\"}\"))\n        )\n    then\n        String alarmMessage = String.format(\"Access denied to  {%s}\", $fileName);\n        System.out.println(alarmMessage);\n\n        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.WARNING, alarmMessage);\n        $logWrapper.setHandled(true);\n        update($logWrapper);\n        insert(alarm);\nend\n\n\n",
+  "_class": "tim6.bsep.SIEMCenter.model.Rule"
+},{
+  "_id": 5,
+  "name": "Accessed not allowed  file",
+  "content": "package bsep.integration.predefined;\nimport tim6.bsep.SIEMCenter.model.drools.LogWrapper;\nimport tim6.bsep.SIEMCenter.model.drools.Alarm\nimport tim6.bsep.SIEMCenter.model.enums.SeverityLevel\nimport tim6.bsep.SIEMCenter.service.implementation.BlacklistServiceImpl;\nimport tim6.bsep.SIEMCenter.service.implementation.WhitelistServiceImpl;\nimport tim6.bsep.SIEMCenter.model.Whitelist;\n\nglobal tim6.bsep.SIEMCenter.service.BlacklistService blacklistService\n\n\nrule \"Accessed not allowed  file\"\n    when\n        $logWrapper: LogWrapper(\n            log.getSeverityLevel() == SeverityLevel.INFORMATIONAL, handled == false,\n            log.getMessage() matches \"File \\\\{.*\\\\} accessed\",\n            $fileName: log.getMessage().substring(log.getMessage().indexOf(\"{\") + 1, log.getMessage().lastIndexOf(\"}\"))\n        )\n        eval(blacklistService.getByName(\"Files\") != null &&\n             blacklistService.getByName(\"Files\").getContent().contains($fileName)\n             )\n    then\n        String alarmMessage = String.format(\"File {%s} accessed\", $fileName);\n        System.out.println(alarmMessage);\n\n        Alarm alarm = new Alarm($logWrapper.getLog(), SeverityLevel.ALERT, alarmMessage);\n        $logWrapper.setHandled(true);\n        update($logWrapper);\n        insert(alarm);\nend\n\n\n",
+  "_class": "tim6.bsep.SIEMCenter.model.Rule"
+}]

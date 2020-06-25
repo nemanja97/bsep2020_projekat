@@ -111,12 +111,6 @@
 			<version>2.2</version>
 		</dependency>
 		<dependency>
-			<groupId>bsep.integracija</groupId>
-			<artifactId>drools</artifactId>
-			<type>jar</type>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
 			<groupId>org.keycloak</groupId>
 			<artifactId>keycloak-spring-boot-starter</artifactId>
 			<version>9.0.2</version>

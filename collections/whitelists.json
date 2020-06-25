@@ -1,0 +1,34 @@
+[{
+  "_id": 1,
+  "name": "APPLICATIONS",
+  "content": [
+    "defenseFirstApp1",
+    "defenseFirstApp2",
+    "defenseFirstApp3"
+  ],
+  "_class": "tim6.bsep.SIEMCenter.model.Whitelist"
+},{
+  "_id": 2,
+  "name": "TEST",
+  "content": [
+    "312421",
+    "5235"
+  ],
+  "_class": "tim6.bsep.SIEMCenter.model.Whitelist"
+},{
+  "_id": 4,
+  "name": "IP ADDRESSES",
+  "content": [
+    "192.0.0.1",
+    "88.88.0.121"
+  ],
+  "_class": "tim6.bsep.SIEMCenter.model.Whitelist"
+},{
+  "_id": 5,
+  "name": "FILES",
+  "content": [
+    "FILEPATH1",
+    "FILEPATH2"
+  ],
+  "_class": "tim6.bsep.SIEMCenter.model.Whitelist"
+}]

@@ -1,0 +1,32 @@
+[{
+  "_id": 2,
+  "name": "5215215",
+  "content": [
+    "2131312",
+    "6126",
+    "1261"
+  ],
+  "_class": "tim6.bsep.SIEMCenter.model.Blacklist"
+},{
+  "_id": 4,
+  "name": "421421",
+  "content": [
+    "31242142"
+  ],
+  "_class": "tim6.bsep.SIEMCenter.model.Blacklist"
+},{
+  "_id": 5,
+  "name": "21512",
+  "content": [
+    "51215"
+  ],
+  "_class": "tim6.bsep.SIEMCenter.model.Blacklist"
+},{
+  "_id": 6,
+  "name": "FILES",
+  "content": [
+    "FILE1",
+    "FILE2"
+  ],
+  "_class": "tim6.bsep.SIEMCenter.model.Blacklist"
+}]
