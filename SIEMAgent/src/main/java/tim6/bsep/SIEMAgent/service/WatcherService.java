@@ -14,6 +14,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import tim6.bsep.SIEMAgent.configuration.AgentConfigItem;
 import tim6.bsep.SIEMAgent.model.Log;
+import tim6.bsep.SIEMAgent.model.LogList;
 import tim6.bsep.SIEMAgent.utility.SignatureUtility;
 
 import javax.annotation.PostConstruct;
@@ -122,7 +123,7 @@ public class WatcherService {
             }
         }
         if(logs.size() > 0){
-            performClientRequest(logs);
+            performClientRequest(new LogList(logs));
         }
     }
 
@@ -134,16 +135,16 @@ public class WatcherService {
             }
         }
         if(logs.size() > 0){
-            performClientRequest(logs);
+            performClientRequest(new LogList(logs));
         }
     }
 
-    private void performClientRequest(ArrayList<Log> logs) {
+    private void performClientRequest(LogList logs) {
         try{
             String msg = mapper.writeValueAsString(logs);
             System.out.println(msg);
             byte[] signedData = SignatureUtility.signMessage(msg, keyStoreName, password, serverCertificateAlias);
-            restTemplate.postForEntity("https://localhost:8044/api/v1/test", signedData, String.class);
+            restTemplate.postForEntity("https://localhost:8044/api/v1/logs/receive", signedData, String.class);
         } catch (IOException | CertificateEncodingException | CMSException | OperatorCreationException e){
             e.printStackTrace();
         } catch (RestClientException ignored){

@@ -3,7 +3,7 @@ import React from "react";
 const LogsTable = (props) => {
   return (
     <>
-      <table className="table" style={{minHeight:"650px"}}>
+      <table className="table" style={{ minHeight: "650px", minWidth: "50vw" }}>
         <thead>
           <tr>
             <th>Id</th>
@@ -35,7 +35,8 @@ const LogsTable = (props) => {
                   <td>{log.timestamp}</td>
                   <td>{log.facilityType}</td>
                   <td>{log.severityLevel}</td>
-                  <td>{log.message}</td>
+                  {log.message.length <= 50 && <td>{log.message}</td>}
+                  {log.message.length > 50 && <td>{log.message.substr(0, 50)})...</td>}
                   <td>{log.hostname}</td>
                   <td>{log.type}</td>
                 </tr>

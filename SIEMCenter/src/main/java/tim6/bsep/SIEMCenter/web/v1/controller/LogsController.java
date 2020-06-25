@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tim6.bsep.SIEMCenter.mapper.LogMapper;
+import tim6.bsep.SIEMCenter.model.LogList;
 import tim6.bsep.SIEMCenter.service.AlarmService;
 import tim6.bsep.SIEMCenter.model.Log;
 import tim6.bsep.SIEMCenter.service.LogService;
@@ -22,6 +23,7 @@ import tim6.bsep.SIEMCenter.web.v1.predicate.LogPredicate;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.security.Principal;
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping(value = "api/v1/logs")
@@ -48,9 +50,11 @@ public class LogsController {
     @RequestMapping(value = "/receive", method = RequestMethod.POST, consumes = "application/octet-stream")
     public ResponseEntity<Object> receiveLog(@Valid @RequestBody byte[] signedLog) throws IOException, CMSException {
         if(SignatureUtility.checkMessage(signedLog)){
-            LogDTO logDTO = SignatureUtility.extractMessage(signedLog);
-            logService.save(LogMapper.LogFromDTO(logDTO));
-            alarmService.saveNewAlarmsFromSession();
+            LogList logList = SignatureUtility.extractMessage(signedLog);
+            for (Log log : logList.getLogs()) {
+                logService.save(log);
+                alarmService.saveNewAlarmsFromSession();
+            }
             return new ResponseEntity<>(HttpStatus.CREATED);
         }else{
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

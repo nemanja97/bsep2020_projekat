@@ -92,9 +92,7 @@ fabric.properties
 
 # logs
 PKI/logs/
-
-# keystore
-PKI/src/main/resources/keystore.jks
+SIEMCenter/logs/
 
 # index
 *.idx

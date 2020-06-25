@@ -1,7 +1,7 @@
 {
   "sources": [
     {
-      "path": "C:\\Users\\Nemanja\\Desktop",
+      "path": "C:\\Users\\Nemanja\\Desktop\\nemojbitiDJoka.txt",
       "batch": false,
       "batchTime": 0,
       "simulated": true,
@@ -9,6 +9,6 @@
       "windows": false,
       "pattern": "([^ ]*)\\.([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*)",
       "groups": ["F", "S", "T", "H", "D", "M"]
-    }
+    },
   ]
 }
