@@ -15,6 +15,7 @@ function SIEMCenterHome() {
   const [searchAlarms, setSearchAlarms] = useState([]);
   const [dangerousAlarms, setDangerousAlarms] = useState([]);
   const [alarmExplanation, setAlarmExplanation] = useState(null);
+  const [logExplanations, setLogExplanation] = useState([]);
 
   const [liveLogs, setLiveLogs] = useState([]);
   const [searchLogs, setSearchLogs] = useState([]);
@@ -182,9 +183,20 @@ function SIEMCenterHome() {
   // ****************************************************************************************************
 
   const handleAlarmExplanation = (alarm) => {
-    // TODO add logs explaining the alarm
     setAlarmExplanation(alarm);
   };
+
+  useEffect(() => {
+    // Get logs from database
+    async function fetchLogs() {
+      const response = await LogService.getLogs({
+        ids: alarmExplanation.logIds
+      });
+      setLogExplanation(response.data.content);
+    }
+    if (alarmExplanation != null)
+      fetchLogs();
+  }, [alarmExplanation]);
 
   // ****************************************************************************************************
   // Page info handling
@@ -341,6 +353,7 @@ function SIEMCenterHome() {
               searchAlarms={searchAlarms}
               searchPage={alarmSearchPage}
               explanation={alarmExplanation}
+              explanationLogs={logExplanations}
               explain={handleAlarmExplanation}
               activeTab={activeTab}
               handlePageChange={handlePageChange}

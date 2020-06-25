@@ -32,7 +32,7 @@ const AlarmsTable = (props) => {
           {props.alarms &&
             props.alarms.map((alarm) => {
               return (
-                <tr key={alarm.id}>
+                <tr key={alarm.id} style={(alarm.severityLevel === "EMERGENCY" || alarm.severityLevel === "CRITICAL") ? {color: "red"} : {color: "black"}}>
                   <th>{alarm.id}</th>
                   <td>{alarm.timestamp}</td>
                   <td>{alarm.facilityType}</td>

@@ -7,7 +7,11 @@ const AlarmsDashboard = (props) => {
     <>
       <div className="tabs is-toggle is-fullwidth is-normal">
         <ul>
-          <li className={props.activeTab.alarms === "liveAlarms" ? "is-active" : ""}>
+          <li
+            className={
+              props.activeTab.alarms === "liveAlarms" ? "is-active" : ""
+            }
+          >
             <a onClick={props.handleTabChange("liveAlarms", "alarm")}>
               <span className="icon is-small">
                 <i className="far fa-chart-bar" aria-hidden="true"></i>
@@ -15,7 +19,11 @@ const AlarmsDashboard = (props) => {
               <span>Live</span>
             </a>
           </li>
-          <li className={props.activeTab.alarms === "searchAlarms" ? "is-active" : ""}>
+          <li
+            className={
+              props.activeTab.alarms === "searchAlarms" ? "is-active" : ""
+            }
+          >
             <a onClick={props.handleTabChange("searchAlarms", "alarm")}>
               <span className="icon is-small">
                 <i className="fas fa-search" aria-hidden="true"></i>
@@ -31,16 +39,15 @@ const AlarmsDashboard = (props) => {
       {props.activeTab.alarms === "searchAlarms" && (
         <>
           <AlarmsTable alarms={props.searchAlarms} explain={props.explain} />
-          {props.searchAlarms.length > 0 &&(
+          {props.searchAlarms.length > 0 && (
             <Pagination
-            activePage={props.searchPage.activePage}
-            itemsCountPerPage={props.searchPage.itemsCountPerPage}
-            totalItemsCount={props.searchPage.totalItemsCount}
-            pageRangeDisplayed={3}
-            onChange={props.handlePageChange.bind(this)}
-          />
+              activePage={props.searchPage.activePage}
+              itemsCountPerPage={props.searchPage.itemsCountPerPage}
+              totalItemsCount={props.searchPage.totalItemsCount}
+              pageRangeDisplayed={3}
+              onChange={props.handlePageChange.bind(this)}
+            />
           )}
-          
         </>
       )}
       {props.explanation !== null && (
@@ -53,7 +60,7 @@ const AlarmsDashboard = (props) => {
             <header className="modal-card-head">
               <p className="modal-card-title">
                 {props.explanation.severityLevel} - ID: {props.explanation.id}{" "}
-                explanation
+                is caused by
               </p>
               <button
                 className="delete"
@@ -62,7 +69,24 @@ const AlarmsDashboard = (props) => {
               ></button>
             </header>
             <section className="modal-card-body">
-              <p>{JSON.stringify(props.explanation)}</p>
+              <div class="container">
+                {props.explanationLogs &&
+                  props.explanationLogs.map((log) => {
+                    return (
+                      <div style={{marginBottom: 10}}>
+                        <h1 style={{marginBottom: 2}} class="subtitle">LOG - ID: {log.id}</h1>
+                        <ul>
+                          <li>Timestamp: {log.timestamp}</li>
+                          <li>Facility type: {log.facilityType}</li>
+                          <li>Severity level: {log.severityLevel}</li>
+                          <li>Type: {log.type}</li>
+                          <li>Hostname: {log.hostname}</li>
+                          <li>Message: {log.message}</li>
+                        </ul>
+                      </div>
+                    );
+                  })}
+              </div>
             </section>
             <footer className="modal-card-foot"></footer>
           </div>
